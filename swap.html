@@ -1,100 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Face Swap Tool | PRX Lab</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#00D4C8', dark: '#00A8A0' }
+          }
+        }
+      }
+    }
+  </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Inter', sans-serif; }
+
     .drop-zone { transition: all 0.2s ease; }
     .drop-zone.dragover {
       border-color: #00D4C8;
       background: rgba(0, 212, 200, 0.08);
       transform: scale(1.02);
     }
+
     .result-img { animation: fadeIn 0.4s ease; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
     .model-btn.active {
       background: linear-gradient(135deg, #00D4C8, #00A8A0);
       color: #070B14;
       border-color: transparent;
     }
 
-    /* ===== LOADING ANIMATION ===== */
+    /* Loader */
     .loader-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(7, 11, 20, 0.85);
-      backdrop-filter: blur(8px);
+      position: fixed; inset: 0;
+      background: rgba(7, 11, 20, 0.88);
+      backdrop-filter: blur(10px);
       z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
       transition: opacity 0.3s ease;
     }
-    .loader-overlay.show {
-      opacity: 1;
-      pointer-events: all;
-    }
-
+    .loader-overlay.show { opacity: 1; pointer-events: all; }
     .spinner {
-      width: 72px;
-      height: 72px;
-      border: 4px solid rgba(0, 212, 200, 0.15);
+      width: 70px; height: 70px;
+      border: 4px solid rgba(0,212,200,0.15);
       border-top-color: #00D4C8;
       border-radius: 50%;
-      animation: spin 0.9s linear infinite;
+      animation: spin 0.85s linear infinite;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
+    @keyframes spin { to { transform: rotate(360deg); } }
     .pulse-ring {
-      position: absolute;
-      width: 90px;
-      height: 90px;
-      border: 2px solid rgba(0, 212, 200, 0.35);
+      position: absolute; width: 90px; height: 90px;
+      border: 2px solid rgba(0,212,200,0.3);
       border-radius: 50%;
-      animation: pulse 1.6s ease-out infinite;
+      animation: pulse 1.5s ease-out infinite;
     }
     @keyframes pulse {
-      0% { transform: scale(0.85); opacity: 0.8; }
-      100% { transform: scale(1.35); opacity: 0; }
+      0% { transform: scale(0.85); opacity: 0.7; }
+      100% { transform: scale(1.4); opacity: 0; }
     }
 
-    .loader-text {
-      margin-top: 28px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
+    /* Before/After Slider */
+    .ba-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+      user-select: none;
+      max-height: 70vh;
     }
-    .loader-sub {
-      margin-top: 8px;
-      font-size: 0.85rem;
-      color: rgba(255,255,255,0.45);
+    .ba-container img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 70vh;
+      object-fit: contain;
     }
-
-    .dots::after {
+    .ba-after {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      width: 50%;
+      overflow: hidden;
+    }
+    .ba-after img {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      width: auto;
+      max-width: none;
+      min-width: 100%;
+    }
+    .ba-handle {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 4px;
+      background: #00D4C8;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: ew-resize;
+      z-index: 10;
+    }
+    .ba-handle::before {
       content: '';
-      animation: dots 1.4s steps(4, end) infinite;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px; height: 36px;
+      background: #00D4C8;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.3);
     }
-    @keyframes dots {
-      0%, 20% { content: ''; }
-      40% { content: '.'; }
-      60% { content: '..'; }
-      80%, 100% { content: '...'; }
+    .ba-handle::after {
+      content: '↔';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 14px;
+      color: #070B14;
+      font-weight: bold;
     }
+
+    /* Progress bar */
+    .progress-track {
+      width: 220px;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00D4C8, #7B61FF);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Theme */
+    html.light body { background: #f4f6f9; color: #0f172a; }
+    html.light .bg-card { background: white; border-color: #e2e8f0; }
+    html.light .text-muted { color: #64748b; }
   </style>
 </head>
-<body class="bg-[#070B14] text-white min-h-screen">
+<body class="bg-[#070B14] text-white min-h-screen transition-colors duration-300">
 
   <!-- Loading Overlay -->
   <div id="loader" class="loader-overlay">
@@ -102,178 +162,208 @@
       <div class="pulse-ring"></div>
       <div class="spinner"></div>
     </div>
-    <div class="loader-text">
-      Swapping faces<span class="dots"></span>
+    <div class="mt-7 text-lg font-semibold" id="loaderTitle">Swapping faces...</div>
+    <div class="text-sm text-white/50 mt-1" id="loaderSub">Using Pro Swap engine</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
     </div>
-    <div class="loader-sub" id="loaderSub">Using Pro Swap engine</div>
+    <div class="text-xs text-white/40 mt-2" id="progressText">0%</div>
   </div>
 
   <!-- Header -->
-  <header class="border-b border-white/10 bg-[#070B14]/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00D4C8] to-[#7B61FF] flex items-center justify-center font-black text-sm">PRX</div>
-        <div>
-          <h1 class="font-bold text-lg tracking-tight">Face Swap Lab</h1>
-          <p class="text-xs text-white/50">Multi-Model Engine</p>
+  <header class="border-b border-white/10 dark:border-white/10 bg-[#070B14]/80 dark:bg-[#070B14]/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <a href="index.html" class="flex items-center gap-3 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00D4C8] to-[#7B61FF] flex items-center justify-center font-black text-sm">PRX</div>
+        <div class="hidden sm:block">
+          <h1 class="font-bold text-base tracking-tight">Face Swap Lab</h1>
+          <p class="text-[11px] text-white/50">Multi-Model Engine</p>
         </div>
       </a>
-      <a href="index.html" class="text-sm text-white/60 hover:text-white transition">← Back to Home</a>
+
+      <div class="flex items-center gap-2">
+        <!-- Theme Toggle -->
+        <button id="themeBtn" class="p-2.5 rounded-xl border border-white/10 hover:bg-white/5 transition" title="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+        <a href="index.html" class="text-sm text-white/60 hover:text-white transition hidden sm:inline">← Home</a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-10">
+  <main class="max-w-6xl mx-auto px-4 py-8">
 
     <!-- Title -->
-    <div class="text-center mb-10">
-      <h2 class="text-3xl md:text-4xl font-extrabold mb-2">AI Face Swap</h2>
-      <p class="text-white/60">Upload face + target • Choose model • Get result</p>
+    <div class="text-center mb-8">
+      <h2 class="text-3xl md:text-4xl font-extrabold mb-1">AI Face Swap</h2>
+      <p class="text-white/55 text-sm">Upload • Choose model • Get studio results</p>
     </div>
 
-    <!-- Model Selector -->
-    <div class="mb-10">
-      <label class="block text-sm font-medium text-white/70 mb-3 text-center">Select Engine / Model</label>
-      <div class="flex flex-wrap justify-center gap-3" id="modelSelector">
-        <button data-model="pro" class="model-btn active px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
-          Pro Swap
-        </button>
-        <button data-model="classic" class="model-btn px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
-          Classic Swap
-        </button>
-        <button data-model="deep" class="model-btn px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
-          Deep Swap
-        </button>
-        <button data-model="remaker" class="model-btn px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
-          Remaker Fast
-        </button>
+    <!-- Controls Row -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-8">
+      <!-- Model Selector -->
+      <div class="flex flex-wrap justify-center gap-2" id="modelSelector">
+        <button data-model="pro" class="model-btn active px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Pro</button>
+        <button data-model="classic" class="model-btn px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Classic</button>
+        <button data-model="deep" class="model-btn px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Deep</button>
+        <button data-model="remaker" class="model-btn px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Remaker</button>
       </div>
-      <p id="modelDesc" class="text-center text-sm text-white/40 mt-3">Best quality • Supports direct file upload • Recommended</p>
+
+      <!-- Compress Toggle -->
+      <label class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 cursor-pointer text-sm">
+        <input type="checkbox" id="compressToggle" checked class="accent-[#00D4C8]" />
+        <span>Compress images</span>
+      </label>
+
+      <!-- Batch Toggle -->
+      <label class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 cursor-pointer text-sm">
+        <input type="checkbox" id="batchToggle" class="accent-[#00D4C8]" />
+        <span>Batch mode</span>
+      </label>
     </div>
+
+    <p id="modelDesc" class="text-center text-sm text-white/40 mb-6">Best quality • Direct upload • Recommended</p>
 
     <!-- Upload Area -->
-    <div class="grid md:grid-cols-2 gap-6 mb-10">
+    <div class="grid md:grid-cols-2 gap-5 mb-8">
 
       <!-- Source Face -->
       <div>
-        <label class="block text-sm font-medium text-white/70 mb-2">1. Source Face (face to apply)</label>
-        <div id="sourceZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-8 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[220px] flex flex-col items-center justify-center">
+        <label class="block text-sm font-medium text-white/70 mb-2">1. Source Face</label>
+        <div id="sourceZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-6 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[200px] flex flex-col items-center justify-center">
           <input type="file" id="sourceInput" accept="image/*" class="hidden" />
           <div id="sourcePreview" class="hidden w-full">
-            <img id="sourceImg" class="max-h-48 mx-auto rounded-xl object-cover" />
-            <p class="mt-3 text-sm text-white/50" id="sourceName"></p>
+            <img id="sourceImg" class="max-h-40 mx-auto rounded-xl object-cover" />
+            <p class="mt-2 text-xs text-white/50" id="sourceName"></p>
           </div>
           <div id="sourcePlaceholder">
-            <div class="text-4xl mb-3">👤</div>
-            <p class="font-medium">Drop face image here</p>
-            <p class="text-sm text-white/40 mt-1">or click to browse</p>
+            <div class="text-3xl mb-2">👤</div>
+            <p class="font-medium text-sm">Drop face image</p>
+            <p class="text-xs text-white/40 mt-1">or click</p>
           </div>
         </div>
+        <p id="faceTip" class="text-xs text-amber-400/80 mt-2 hidden">⚠ Better results with clear, front-facing faces</p>
       </div>
 
-      <!-- Target Image -->
+      <!-- Target Image(s) -->
       <div>
-        <label class="block text-sm font-medium text-white/70 mb-2">2. Target Image (body / background)</label>
-        <div id="targetZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-8 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[220px] flex flex-col items-center justify-center">
-          <input type="file" id="targetInput" accept="image/*" class="hidden" />
+        <label class="block text-sm font-medium text-white/70 mb-2">
+          2. Target Image<span id="batchLabel" class="hidden">s (multiple)</span>
+        </label>
+        <div id="targetZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-6 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[200px] flex flex-col items-center justify-center">
+          <input type="file" id="targetInput" accept="image/*" class="hidden" multiple />
           <div id="targetPreview" class="hidden w-full">
-            <img id="targetImg" class="max-h-48 mx-auto rounded-xl object-cover" />
-            <p class="mt-3 text-sm text-white/50" id="targetName"></p>
+            <div id="targetThumbs" class="flex flex-wrap gap-2 justify-center"></div>
+            <p class="mt-2 text-xs text-white/50" id="targetName"></p>
           </div>
           <div id="targetPlaceholder">
-            <div class="text-4xl mb-3">🖼️</div>
-            <p class="font-medium">Drop target image here</p>
-            <p class="text-sm text-white/40 mt-1">or click to browse</p>
+            <div class="text-3xl mb-2">🖼️</div>
+            <p class="font-medium text-sm">Drop target image</p>
+            <p class="text-xs text-white/40 mt-1">or click</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Action -->
-    <div class="flex justify-center mb-8">
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap justify-center gap-3 mb-8">
       <button id="swapBtn" disabled
-        class="px-12 py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-[#00D4C8] to-[#00A8A0] text-[#070B14] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 transition-all shadow-lg shadow-[#00D4C8]/20">
-        ⚡ Swap Faces Now
+        class="px-10 py-3.5 rounded-2xl font-bold text-base bg-gradient-to-r from-[#00D4C8] to-[#00A8A0] text-[#070B14] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 transition-all shadow-lg shadow-[#00D4C8]/15">
+        ⚡ Swap Faces
+      </button>
+      <button id="clearBtn" class="px-6 py-3.5 rounded-2xl border border-white/15 hover:bg-white/5 transition text-sm font-medium">
+        Clear All
       </button>
     </div>
 
     <!-- Status -->
-    <div id="status" class="text-center text-white/60 mb-8 hidden"></div>
+    <div id="status" class="text-center text-sm mb-6 hidden"></div>
 
-    <!-- Result -->
-    <div id="resultArea" class="hidden">
-      <h3 class="text-xl font-bold text-center mb-4">Result</h3>
-      <div class="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col items-center">
-        <img id="resultImg" class="result-img max-w-full max-h-[70vh] rounded-xl shadow-2xl" />
-        <div class="mt-6 flex flex-wrap gap-4 justify-center">
-          <a id="downloadBtn" download="prx-faceswap-result.jpg"
-            class="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition">
-            Download Result
+    <!-- Result Area -->
+    <div id="resultArea" class="hidden mb-12">
+      <h3 class="text-lg font-bold text-center mb-4">Result</h3>
+
+      <!-- Before / After Slider -->
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6">
+        <div class="ba-container" id="baContainer">
+          <img id="baBefore" src="" alt="Before" />
+          <div class="ba-after" id="baAfterWrap">
+            <img id="baAfter" src="" alt="After" />
+          </div>
+          <div class="ba-handle" id="baHandle"></div>
+        </div>
+
+        <div class="mt-5 flex flex-wrap gap-3 justify-center">
+          <a id="downloadBtn" download="prx-faceswap.jpg"
+            class="px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition">
+            Download
           </a>
-          <button onclick="resetAll()" class="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/5 transition">
-            Start Over
+          <button id="shareBtn" class="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm font-medium">
+            Share
+          </button>
+          <button id="retryBtn" class="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm font-medium hidden">
+            Retry with Pro
+          </button>
+          <button onclick="resetAll()" class="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm">
+            New Swap
           </button>
         </div>
       </div>
+
+      <!-- Batch Results -->
+      <div id="batchResults" class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4 hidden"></div>
+    </div>
+
+    <!-- History -->
+    <div id="historySection" class="mb-10 hidden">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-lg">Recent Swaps</h3>
+        <button id="clearHistory" class="text-xs text-white/40 hover:text-white/70">Clear history</button>
+      </div>
+      <div id="historyList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
     </div>
 
   </main>
 
-  <!-- Contacts -->
-  <section class="border-t border-white/5 py-12">
+  <!-- Community -->
+  <section class="border-t border-white/5 py-10">
     <div class="max-w-6xl mx-auto px-4 text-center">
-      <h3 class="text-lg font-bold mb-4">Join Community</h3>
+      <h3 class="text-base font-bold mb-3">Join Community</h3>
       <div class="flex flex-col sm:flex-row gap-3 justify-center">
         <a href="https://whatsapp.com/channel/0029VbCEmPm1yT22tvtqWQ2l" target="_blank" rel="noopener"
-          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#25D366] text-black font-bold text-sm hover:scale-105 transition">
+          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] text-black font-bold text-sm hover:scale-105 transition">
           WhatsApp Channel
         </a>
         <a href="https://t.me/+86b1oCsDAxdhNjg8" target="_blank" rel="noopener"
-          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#229ED9] text-white font-bold text-sm hover:scale-105 transition">
+          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#229ED9] text-white font-bold text-sm hover:scale-105 transition">
           Telegram Channel
         </a>
       </div>
     </div>
   </section>
 
-  <footer class="border-t border-white/5 py-8 text-center text-white/40 text-sm">
+  <footer class="border-t border-white/5 py-6 text-center text-white/40 text-xs">
     <p class="mb-1">© 2026 PRX Face Swap Lab • Built by Paradox Tech</p>
     <p>Thanks to <span class="text-white/60">Paradox Tech</span> and <span class="text-white/60">Omega Tech</span></p>
   </footer>
 
   <script>
-    // ========== MODEL CONFIG ==========
+    // ==================== CONFIG ====================
     const MODELS = {
-      pro: {
-        name: "Pro Swap",
-        desc: "Best quality • Supports direct file upload • Recommended",
-        endpoint: "https://api.omegatech.app/api/tools/faceswap",
-        type: "form"
-      },
-      classic: {
-        name: "Classic Swap",
-        desc: "Reliable classic engine • Good balance of speed & quality",
-        endpoint: "https://api.omegatech.app/api/ai/Faceawap",
-        type: "form"
-      },
-      deep: {
-        name: "Deep Swap",
-        desc: "Deep processing • Strong identity transfer",
-        endpoint: "https://api.omegatech.app/api/ai/Deepfake",
-        type: "url"
-      },
-      remaker: {
-        name: "Remaker Fast",
-        desc: "Ultra fast • Great for quick previews",
-        endpoint: "https://api.omegatech.app/api/ai/remaker",
-        type: "url"
-      }
+      pro: { name: "Pro Swap", desc: "Best quality • Direct upload • Recommended", endpoint: "https://api.omegatech.app/api/tools/faceswap", type: "form" },
+      classic: { name: "Classic Swap", desc: "Reliable • Good balance of speed & quality", endpoint: "https://api.omegatech.app/api/ai/Faceawap", type: "form" },
+      deep: { name: "Deep Swap", desc: "Deep processing • Strong identity transfer", endpoint: "https://api.omegatech.app/api/ai/Deepfake", type: "url" },
+      remaker: { name: "Remaker Fast", desc: "Ultra fast • Great for quick previews", endpoint: "https://api.omegatech.app/api/ai/remaker", type: "url" }
     };
 
     let currentModel = "pro";
     let sourceFile = null;
-    let targetFile = null;
+    let targetFiles = [];
+    let lastResultBlob = null;
+    let lastTargetUrl = null;
+    let progressInterval = null;
 
-    // ========== UI SETUP ==========
+    // ==================== ELEMENTS ====================
     const sourceInput = document.getElementById('sourceInput');
     const targetInput = document.getElementById('targetInput');
     const sourceZone = document.getElementById('sourceZone');
@@ -281,13 +371,42 @@
     const swapBtn = document.getElementById('swapBtn');
     const status = document.getElementById('status');
     const resultArea = document.getElementById('resultArea');
-    const resultImg = document.getElementById('resultImg');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const modelDesc = document.getElementById('modelDesc');
     const loader = document.getElementById('loader');
     const loaderSub = document.getElementById('loaderSub');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const modelDesc = document.getElementById('modelDesc');
+    const batchToggle = document.getElementById('batchToggle');
+    const compressToggle = document.getElementById('compressToggle');
+    const faceTip = document.getElementById('faceTip');
+    const batchLabel = document.getElementById('batchLabel');
+    const batchResults = document.getElementById('batchResults');
+    const historySection = document.getElementById('historySection');
+    const historyList = document.getElementById('historyList');
+    const retryBtn = document.getElementById('retryBtn');
 
-    // Model selector
+    // ==================== THEME ====================
+    const themeBtn = document.getElementById('themeBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    function setTheme(mode) {
+      if (mode === 'light') {
+        html.classList.remove('dark');
+        html.classList.add('light');
+        themeIcon.textContent = '☀️';
+        localStorage.setItem('prx-theme', 'light');
+      } else {
+        html.classList.remove('light');
+        html.classList.add('dark');
+        themeIcon.textContent = '🌙';
+        localStorage.setItem('prx-theme', 'dark');
+      }
+    }
+    setTheme(localStorage.getItem('prx-theme') || 'dark');
+    themeBtn.onclick = () => setTheme(html.classList.contains('dark') ? 'light' : 'dark');
+
+    // ==================== MODEL SELECT ====================
     document.querySelectorAll('.model-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
@@ -297,186 +416,386 @@
       });
     });
 
-    // Drag & Drop
-    function setupDropZone(zone, input, onFile) {
+    // ==================== BATCH TOGGLE ====================
+    batchToggle.addEventListener('change', () => {
+      targetInput.multiple = batchToggle.checked;
+      batchLabel.classList.toggle('hidden', !batchToggle.checked);
+      if (!batchToggle.checked && targetFiles.length > 1) {
+        targetFiles = targetFiles.slice(0, 1);
+        renderTargetPreviews();
+      }
+    });
+
+    // ==================== IMAGE COMPRESS ====================
+    async function compressImage(file, maxWidth = 1280, quality = 0.82) {
+      if (!compressToggle.checked) return file;
+      return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) {
+            h = Math.round(h * maxWidth / w);
+            w = maxWidth;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => {
+            URL.revokeObjectURL(url);
+            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = url;
+      });
+    }
+
+    // ==================== DROP ZONES ====================
+    function setupDropZone(zone, input, onFiles) {
       zone.addEventListener('click', () => input.click());
       zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
       zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
       zone.addEventListener('drop', e => {
         e.preventDefault();
         zone.classList.remove('dragover');
-        if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files.length) onFiles([...e.dataTransfer.files]);
       });
-      input.addEventListener('change', () => { if (input.files[0]) onFile(input.files[0]); });
+      input.addEventListener('change', () => {
+        if (input.files.length) onFiles([...input.files]);
+      });
     }
 
-    function handleSource(file) {
-      sourceFile = file;
-      const url = URL.createObjectURL(file);
+    function handleSource(files) {
+      sourceFile = files[0];
+      const url = URL.createObjectURL(sourceFile);
       document.getElementById('sourceImg').src = url;
-      document.getElementById('sourceName').textContent = file.name;
+      document.getElementById('sourceName').textContent = sourceFile.name;
       document.getElementById('sourcePreview').classList.remove('hidden');
       document.getElementById('sourcePlaceholder').classList.add('hidden');
+
+      // Quality tip
+      const img = new Image();
+      img.onload = () => {
+        if (img.width < 300 || img.height < 300) faceTip.classList.remove('hidden');
+        else faceTip.classList.add('hidden');
+      };
+      img.src = url;
       checkReady();
     }
 
-    function handleTarget(file) {
-      targetFile = file;
-      const url = URL.createObjectURL(file);
-      document.getElementById('targetImg').src = url;
-      document.getElementById('targetName').textContent = file.name;
+    function handleTargets(files) {
+      if (batchToggle.checked) {
+        targetFiles = files.slice(0, 8); // max 8
+      } else {
+        targetFiles = [files[0]];
+      }
+      renderTargetPreviews();
+      checkReady();
+    }
+
+    function renderTargetPreviews() {
+      const thumbs = document.getElementById('targetThumbs');
+      thumbs.innerHTML = '';
+      targetFiles.forEach((f, i) => {
+        const url = URL.createObjectURL(f);
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'h-24 w-24 object-cover rounded-lg';
+        thumbs.appendChild(img);
+      });
+      document.getElementById('targetName').textContent = targetFiles.length > 1
+        ? `${targetFiles.length} images selected`
+        : targetFiles[0]?.name || '';
       document.getElementById('targetPreview').classList.remove('hidden');
       document.getElementById('targetPlaceholder').classList.add('hidden');
-      checkReady();
     }
 
     setupDropZone(sourceZone, sourceInput, handleSource);
-    setupDropZone(targetZone, targetInput, handleTarget);
+    setupDropZone(targetZone, targetInput, handleTargets);
 
     function checkReady() {
-      swapBtn.disabled = !(sourceFile && targetFile);
+      swapBtn.disabled = !(sourceFile && targetFiles.length);
     }
 
+    document.getElementById('clearBtn').onclick = resetAll;
+
+    // ==================== LOADER + PROGRESS ====================
     function showLoader(modelName) {
       loaderSub.textContent = `Using ${modelName} engine`;
+      progressFill.style.width = '0%';
+      progressText.textContent = '0%';
       loader.classList.add('show');
+
+      let p = 0;
+      clearInterval(progressInterval);
+      progressInterval = setInterval(() => {
+        p += Math.random() * 4 + 1;
+        if (p > 92) p = 92;
+        progressFill.style.width = p + '%';
+        progressText.textContent = Math.floor(p) + '%';
+      }, 400);
+    }
+
+    function finishProgress() {
+      clearInterval(progressInterval);
+      progressFill.style.width = '100%';
+      progressText.textContent = '100%';
     }
 
     function hideLoader() {
-      loader.classList.remove('show');
+      finishProgress();
+      setTimeout(() => loader.classList.remove('show'), 300);
     }
 
-    // Convert file to base64 data URL
-    function fileToDataURL(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+    // ==================== BEFORE / AFTER SLIDER ====================
+    function initBASlider(beforeUrl, afterUrl) {
+      const container = document.getElementById('baContainer');
+      const before = document.getElementById('baBefore');
+      const after = document.getElementById('baAfter');
+      const afterWrap = document.getElementById('baAfterWrap');
+      const handle = document.getElementById('baHandle');
+
+      before.src = beforeUrl;
+      after.src = afterUrl;
+
+      let isDragging = false;
+
+      function update(x) {
+        const rect = container.getBoundingClientRect();
+        let percent = ((x - rect.left) / rect.width) * 100;
+        percent = Math.max(5, Math.min(95, percent));
+        afterWrap.style.width = percent + '%';
+        handle.style.left = percent + '%';
+      }
+
+      handle.onmousedown = (e) => { isDragging = true; e.preventDefault(); };
+      window.onmouseup = () => isDragging = false;
+      window.onmousemove = (e) => { if (isDragging) update(e.clientX); };
+
+      handle.ontouchstart = (e) => { isDragging = true; };
+      window.ontouchend = () => isDragging = false;
+      window.ontouchmove = (e) => {
+        if (isDragging) update(e.touches[0].clientX);
+      };
+
+      container.onclick = (e) => update(e.clientX);
+
+      // Reset to middle
+      afterWrap.style.width = '50%';
+      handle.style.left = '50%';
+    }
+
+    // ==================== HISTORY ====================
+    function loadHistory() {
+      const items = JSON.parse(localStorage.getItem('prx-history') || '[]');
+      if (!items.length) {
+        historySection.classList.add('hidden');
+        return;
+      }
+      historySection.classList.remove('hidden');
+      historyList.innerHTML = '';
+      items.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'relative group rounded-xl overflow-hidden border border-white/10';
+        div.innerHTML = `
+          <img src="${item.url}" class="w-full h-28 object-cover" />
+          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+            <a href="${item.url}" download="prx-history-${idx}.jpg" class="px-3 py-1.5 bg-white text-black text-xs font-bold rounded-lg">Save</a>
+          </div>
+        `;
+        historyList.appendChild(div);
       });
     }
 
-    // ========== MAIN SWAP ==========
-    async function doSwap() {
-      if (!sourceFile || !targetFile) return;
+    function saveToHistory(blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        let items = JSON.parse(localStorage.getItem('prx-history') || '[]');
+        items.unshift({ url: reader.result, ts: Date.now() });
+        items = items.slice(0, 8);
+        localStorage.setItem('prx-history', JSON.stringify(items));
+        loadHistory();
+      };
+      reader.readAsDataURL(blob);
+    }
+
+    document.getElementById('clearHistory').onclick = () => {
+      localStorage.removeItem('prx-history');
+      loadHistory();
+    };
+
+    // ==================== SHARE ====================
+    document.getElementById('shareBtn').onclick = async () => {
+      if (!lastResultBlob) return;
+      try {
+        if (navigator.share && navigator.canShare) {
+          const file = new File([lastResultBlob], 'prx-faceswap.jpg', { type: 'image/jpeg' });
+          await navigator.share({ files: [file], title: 'PRX Face Swap' });
+        } else {
+          // Fallback: copy image to clipboard if possible, else download
+          await navigator.clipboard.write([new ClipboardItem({ 'image/jpeg': lastResultBlob })]);
+          status.classList.remove('hidden');
+          status.innerHTML = '<span class="text-[#00D4C8]">Image copied to clipboard</span>';
+        }
+      } catch (e) {
+        // Final fallback
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(lastResultBlob);
+        a.download = 'prx-faceswap.jpg';
+        a.click();
+      }
+    };
+
+    // ==================== CORE SWAP ====================
+    async function doSwap(forcePro = false) {
+      if (!sourceFile || !targetFiles.length) return;
+
+      const modelKey = forcePro ? 'pro' : currentModel;
+      const model = MODELS[modelKey];
 
       swapBtn.disabled = true;
       status.classList.add('hidden');
       resultArea.classList.add('hidden');
-      showLoader(MODELS[currentModel].name);
-
-      const model = MODELS[currentModel];
-      let res;
+      batchResults.classList.add('hidden');
+      batchResults.innerHTML = '';
+      retryBtn.classList.add('hidden');
+      showLoader(model.name);
 
       try {
-        if (model.type === "form") {
-          const formData = new FormData();
+        const face = await compressImage(sourceFile);
+        const results = [];
 
-          if (currentModel === "pro") {
-            formData.append("source", sourceFile);
-            formData.append("target", targetFile);
-          } else if (currentModel === "classic") {
-            formData.append("action", "swap");
-            formData.append("faceFile", sourceFile);
-            formData.append("sourceFile", targetFile);
-            formData.append("raw", "true");
-          }
+        for (let i = 0; i < targetFiles.length; i++) {
+          loaderSub.textContent = targetFiles.length > 1
+            ? `Processing ${i + 1}/${targetFiles.length} • ${model.name}`
+            : `Using ${model.name} engine`;
 
-          res = await fetch(model.endpoint, { method: "POST", body: formData });
-        } else {
-          const formData = new FormData();
-          formData.append("source_image", sourceFile);
-          formData.append("target_image", targetFile);
-          formData.append("face", sourceFile);
-          formData.append("target", targetFile);
+          const target = await compressImage(targetFiles[i]);
+          const blob = await callEngine(model, face, target);
+          results.push(blob);
 
-          res = await fetch(model.endpoint, { method: "POST", body: formData });
-
-          if (!res.ok) {
-            const faceData = await fileToDataURL(sourceFile);
-            const targetData = await fileToDataURL(targetFile);
-            res = await fetch(model.endpoint, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                sourceUrl: faceData,
-                faceUrl: faceData,
-                targetUrl: targetData,
-                source_image: faceData,
-                target_image: targetData
-              })
-            });
+          if (i === 0) {
+            lastResultBlob = blob;
+            lastTargetUrl = URL.createObjectURL(targetFiles[0]);
+            const resultUrl = URL.createObjectURL(blob);
+            document.getElementById('downloadBtn').href = resultUrl;
+            initBASlider(lastTargetUrl, resultUrl);
+            saveToHistory(blob);
           }
         }
 
-        // Fallback to Pro
-        if (!res.ok && currentModel !== "pro") {
-          loaderSub.textContent = "Falling back to Pro Swap...";
-          const formData = new FormData();
-          formData.append("source", sourceFile);
-          formData.append("target", targetFile);
-          res = await fetch(MODELS.pro.endpoint, { method: "POST", body: formData });
+        // Show single or batch
+        resultArea.classList.remove('hidden');
+        if (results.length > 1) {
+          batchResults.classList.remove('hidden');
+          results.forEach((blob, idx) => {
+            const url = URL.createObjectURL(blob);
+            const card = document.createElement('div');
+            card.className = 'rounded-xl overflow-hidden border border-white/10';
+            card.innerHTML = `
+              <img src="${url}" class="w-full aspect-square object-cover" />
+              <a href="${url}" download="prx-batch-${idx + 1}.jpg" class="block text-center py-2 text-xs font-medium bg-white/5 hover:bg-white/10">Download #${idx + 1}</a>
+            `;
+            batchResults.appendChild(card);
+          });
         }
 
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`Engine error ${res.status}: ${errText.slice(0, 180)}`);
-        }
-
-        const contentType = res.headers.get("content-type") || "";
-        let blob;
-
-        if (contentType.includes("application/json")) {
-          const json = await res.json();
-          const b64 = json.image || json.result || json.base64 || json.data?.image || json.output;
-          if (b64 && typeof b64 === "string") {
-            const pure = b64.replace(/^data:image\/\w+;base64,/, "");
-            const byteChars = atob(pure);
-            const byteNumbers = new Array(byteChars.length);
-            for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-            blob = new Blob([new Uint8Array(byteNumbers)], { type: "image/jpeg" });
-          } else if (json.url || json.image_url) {
-            const imgRes = await fetch(json.url || json.image_url);
-            blob = await imgRes.blob();
-          } else {
-            throw new Error("Unexpected JSON response format");
-          }
-        } else {
-          blob = await res.blob();
-        }
-
-        const url = URL.createObjectURL(blob);
-        resultImg.src = url;
-        downloadBtn.href = url;
-        resultArea.classList.remove("hidden");
-        status.classList.remove("hidden");
-        status.innerHTML = `<span class="text-[#00D4C8]">✅ Done with ${MODELS[currentModel].name}</span>`;
+        status.classList.remove('hidden');
+        status.innerHTML = `<span class="text-[#00D4C8]">✅ Done with ${model.name}${results.length > 1 ? ` • ${results.length} images` : ''}</span>`;
 
       } catch (err) {
         console.error(err);
-        status.classList.remove("hidden");
-        status.innerHTML = `<span class="text-red-400">❌ Failed: ${err.message}</span>`;
+        status.classList.remove('hidden');
+        status.innerHTML = `<span class="text-red-400">❌ ${err.message}</span>`;
+        if (currentModel !== 'pro') {
+          retryBtn.classList.remove('hidden');
+          retryBtn.onclick = () => doSwap(true);
+        }
       } finally {
         hideLoader();
         swapBtn.disabled = false;
       }
     }
 
-    swapBtn.addEventListener("click", doSwap);
+    async function callEngine(model, faceFile, targetFile) {
+      let res;
+
+      if (model.type === 'form') {
+        const formData = new FormData();
+        if (model.name.includes('Pro')) {
+          formData.append('source', faceFile);
+          formData.append('target', targetFile);
+        } else {
+          formData.append('action', 'swap');
+          formData.append('faceFile', faceFile);
+          formData.append('sourceFile', targetFile);
+          formData.append('raw', 'true');
+        }
+        res = await fetch(model.endpoint, { method: 'POST', body: formData });
+      } else {
+        const formData = new FormData();
+        formData.append('source_image', faceFile);
+        formData.append('target_image', targetFile);
+        formData.append('face', faceFile);
+        formData.append('target', targetFile);
+        res = await fetch(model.endpoint, { method: 'POST', body: formData });
+      }
+
+      // Fallback
+      if (!res.ok && model.name !== 'Pro Swap') {
+        loaderSub.textContent = 'Falling back to Pro Swap...';
+        const formData = new FormData();
+        formData.append('source', faceFile);
+        formData.append('target', targetFile);
+        res = await fetch(MODELS.pro.endpoint, { method: 'POST', body: formData });
+      }
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`Engine error ${res.status}: ${t.slice(0, 120)}`);
+      }
+
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const json = await res.json();
+        const b64 = json.image || json.result || json.base64 || json.data?.image || json.output;
+        if (b64) {
+          const pure = b64.replace(/^data:image\/\w+;base64,/, '');
+          const bytes = Uint8Array.from(atob(pure), c => c.charCodeAt(0));
+          return new Blob([bytes], { type: 'image/jpeg' });
+        }
+        if (json.url || json.image_url) {
+          const r = await fetch(json.url || json.image_url);
+          return await r.blob();
+        }
+        throw new Error('Unexpected response');
+      }
+      return await res.blob();
+    }
+
+    swapBtn.addEventListener('click', () => doSwap(false));
 
     function resetAll() {
       sourceFile = null;
-      targetFile = null;
-      sourceInput.value = "";
-      targetInput.value = "";
-      document.getElementById("sourcePreview").classList.add("hidden");
-      document.getElementById("sourcePlaceholder").classList.remove("hidden");
-      document.getElementById("targetPreview").classList.add("hidden");
-      document.getElementById("targetPlaceholder").classList.remove("hidden");
-      resultArea.classList.add("hidden");
-      status.classList.add("hidden");
+      targetFiles = [];
+      sourceInput.value = '';
+      targetInput.value = '';
+      document.getElementById('sourcePreview').classList.add('hidden');
+      document.getElementById('sourcePlaceholder').classList.remove('hidden');
+      document.getElementById('targetPreview').classList.add('hidden');
+      document.getElementById('targetPlaceholder').classList.remove('hidden');
+      document.getElementById('targetThumbs').innerHTML = '';
+      resultArea.classList.add('hidden');
+      status.classList.add('hidden');
+      faceTip.classList.add('hidden');
       checkReady();
     }
+
+    // Init
+    loadHistory();
   </script>
 </body>
 </html>
