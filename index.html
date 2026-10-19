@@ -1,122 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PRX Face Swap | Create Perfect Image Replicas</title>
-  <meta name="description" content="Create stunning image replicas with advanced AI face swap. Upload once, generate unlimited variations. Powered by Paradox Tech." />
+  <title>PRX Face Swap</title>
+  <meta name="description" content="High-quality AI face swap. Create image replicas quickly and privately." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .glow { box-shadow: 0 0 40px rgba(0, 212, 200, 0.25); }
-    .gradient-text {
-      background: linear-gradient(135deg, #00D4C8 0%, #7B61FF 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
   </style>
 </head>
-<body class="bg-[#070B14] text-white min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-  <!-- Nav -->
-  <nav class="border-b border-white/5 bg-[#070B14]/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00D4C8] to-[#7B61FF] flex items-center justify-center font-black text-sm">PRX</div>
-        <span class="font-bold text-lg tracking-tight">Face Swap Lab</span>
+  <header class="border-b border-slate-800/80">
+    <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-md bg-slate-100 text-slate-900 flex items-center justify-center text-xs font-bold">PRX</div>
+        <span class="text-sm font-medium">Face Swap</span>
       </div>
-      <div class="flex items-center gap-4">
-        <a href="swap.html" class="text-sm text-white/70 hover:text-white transition">Tool</a>
-        <a href="swap.html" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00D4C8] to-[#00A8A0] text-[#070B14] font-bold text-sm hover:scale-105 transition">Start Swapping</a>
-      </div>
+      <a href="swap.html" class="text-sm text-slate-300 hover:text-white transition">Open tool</a>
     </div>
-  </nav>
+  </header>
 
-  <!-- Hero -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#00D4C8]/10 via-transparent to-transparent"></div>
-    <div class="max-w-6xl mx-auto px-4 pt-20 pb-16 text-center relative">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-[#00D4C8] mb-6">
-        <span class="w-2 h-2 rounded-full bg-[#00D4C8] animate-pulse"></span>
-        Live & Free • No Signup Required
-      </div>
-      <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6">
-        Create Perfect<br />
-        <span class="gradient-text">Image Replicas</span>
-      </h1>
-      <p class="text-xl text-white/60 max-w-2xl mx-auto mb-10">
-        Upload any face. Drop it onto any image. Get studio-quality face swaps in seconds.<br />
-        Built for creators, marketers, and anyone who needs flawless results.
-      </p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="swap.html" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-[#00D4C8] to-[#00A8A0] text-[#070B14] font-bold text-lg hover:scale-105 transition glow">
-          Launch Face Swap Tool →
-        </a>
-        <a href="#features" class="px-10 py-4 rounded-2xl border border-white/15 hover:bg-white/5 font-semibold text-lg transition">
-          See Features
-        </a>
-      </div>
-    </div>
-  </section>
+  <main class="flex-1 max-w-3xl mx-auto px-4 py-16 w-full">
+    <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight mb-4">
+      Create accurate image replicas with face swap
+    </h1>
+    <p class="text-slate-400 text-base max-w-xl mb-10 leading-relaxed">
+      Upload a source face and a target image. The tool returns a high-quality result in seconds. No account required.
+    </p>
 
-  <!-- Features -->
-  <section id="features" class="max-w-6xl mx-auto px-4 py-20">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-14">Why PRX Face Swap?</h2>
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#00D4C8]/40 transition">
-        <div class="text-4xl mb-4">⚡</div>
-        <h3 class="font-bold text-xl mb-2">Lightning Fast</h3>
-        <p class="text-white/60">Most swaps complete in under 15 seconds. No waiting queues, no nonsense.</p>
-      </div>
-      <div class="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#00D4C8]/40 transition">
-        <div class="text-4xl mb-4">🎭</div>
-        <h3 class="font-bold text-xl mb-2">Multiple Models</h3>
-        <p class="text-white/60">Switch between Pro, Classic, and Deep engines. Pick the one that fits your style.</p>
-      </div>
-      <div class="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#00D4C8]/40 transition">
-        <div class="text-4xl mb-4">🔒</div>
-        <h3 class="font-bold text-xl mb-2">Private by Design</h3>
-        <p class="text-white/60">Images are processed and discarded. Nothing is stored on our side.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA Banner -->
-  <section class="max-w-6xl mx-auto px-4 pb-20">
-    <div class="rounded-3xl bg-gradient-to-r from-[#0A2540] to-[#0D1B2A] border border-[#00D4C8]/20 p-10 md:p-14 text-center glow">
-      <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to create your first replica?</h2>
-      <p class="text-white/60 mb-8 max-w-xl mx-auto">No account. No credit card. Just upload and swap.</p>
-      <a href="swap.html" class="inline-block px-10 py-4 rounded-2xl bg-[#00D4C8] text-[#070B14] font-bold text-lg hover:scale-105 transition">
-        Open Face Swap Lab
+    <div class="flex flex-wrap gap-3 mb-16">
+      <a href="swap.html" class="px-5 py-2.5 rounded-md bg-slate-100 text-slate-900 text-sm font-medium hover:bg-white transition">
+        Launch tool
+      </a>
+      <a href="#features" class="px-5 py-2.5 rounded-md border border-slate-700 text-sm text-slate-300 hover:bg-slate-900 transition">
+        Features
       </a>
     </div>
-  </section>
 
-  <!-- Contacts / Community -->
-  <section class="border-t border-white/5 py-16">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-      <h3 class="text-2xl font-bold mb-3">Join the Community</h3>
-      <p class="text-white/50 mb-8">Get updates, tips, and early access to new models.</p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="https://whatsapp.com/channel/0029VbCEmPm1yT22tvtqWQ2l" target="_blank" rel="noopener"
-          class="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#25D366] text-black font-bold hover:scale-105 transition">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Join WhatsApp Channel
-        </a>
-        <a href="https://t.me/+86b1oCsDAxdhNjg8" target="_blank" rel="noopener"
-          class="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#229ED9] text-white font-bold hover:scale-105 transition">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.624 4.476-1.635z"/></svg>
-          Join Telegram Channel
-        </a>
+    <section id="features" class="grid sm:grid-cols-3 gap-6 mb-16">
+      <div class="border border-slate-800 rounded-lg p-5">
+        <h3 class="text-sm font-medium mb-1.5">Multiple engines</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Switch between Pro, Classic, Deep and Remaker models depending on quality or speed needs.</p>
+      </div>
+      <div class="border border-slate-800 rounded-lg p-5">
+        <h3 class="text-sm font-medium mb-1.5">Batch processing</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Apply one face to several target images in a single run.</p>
+      </div>
+      <div class="border border-slate-800 rounded-lg p-5">
+        <h3 class="text-sm font-medium mb-1.5">Local history</h3>
+        <p class="text-sm text-slate-400 leading-relaxed">Recent results stay in your browser so you can re-download without reprocessing.</p>
+      </div>
+    </section>
+
+    <div class="border border-slate-800 rounded-lg p-6 sm:p-8 text-center">
+      <p class="text-sm text-slate-400 mb-4">Ready when you are.</p>
+      <a href="swap.html" class="inline-block px-5 py-2.5 rounded-md bg-slate-100 text-slate-900 text-sm font-medium hover:bg-white transition">
+        Open Face Swap
+      </a>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-800/80">
+    <div class="max-w-3xl mx-auto px-4 py-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
+        <div class="flex gap-4">
+          <a href="https://whatsapp.com/channel/0029VbCEmPm1yT22tvtqWQ2l" target="_blank" rel="noopener" class="text-slate-400 hover:text-slate-200 transition">WhatsApp</a>
+          <a href="https://t.me/+86b1oCsDAxdhNjg8" target="_blank" rel="noopener" class="text-slate-400 hover:text-slate-200 transition">Telegram</a>
+        </div>
+        <p class="text-xs text-slate-500">Built by Paradox Tech · Thanks to Paradox Tech and Omega Tech</p>
       </div>
     </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="border-t border-white/5 py-10 text-center text-white/40 text-sm">
-    <p class="mb-2">© 2026 PRX Face Swap Lab • Built by Paradox Tech</p>
-    <p>Thanks to <span class="text-white/60">Paradox Tech</span> and <span class="text-white/60">Omega Tech</span></p>
   </footer>
 
 </body>

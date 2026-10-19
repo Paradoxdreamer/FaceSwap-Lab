@@ -3,87 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Face Swap Tool | PRX Lab</title>
+  <title>Face Swap — PRX Lab</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          colors: {
-            brand: { DEFAULT: '#00D4C8', dark: '#00A8A0' }
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
           }
         }
       }
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
 
-    .drop-zone { transition: all 0.2s ease; }
+    .drop-zone {
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
     .drop-zone.dragover {
-      border-color: #00D4C8;
-      background: rgba(0, 212, 200, 0.08);
-      transform: scale(1.02);
+      border-color: #64748b;
+      background: rgba(100, 116, 139, 0.06);
     }
 
-    .result-img { animation: fadeIn 0.4s ease; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .model-btn.active {
-      background: linear-gradient(135deg, #00D4C8, #00A8A0);
-      color: #070B14;
-      border-color: transparent;
-    }
-
-    /* Loader */
-    .loader-overlay {
-      position: fixed; inset: 0;
-      background: rgba(7, 11, 20, 0.88);
-      backdrop-filter: blur(10px);
-      z-index: 100;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-    .loader-overlay.show { opacity: 1; pointer-events: all; }
-    .spinner {
-      width: 70px; height: 70px;
-      border: 4px solid rgba(0,212,200,0.15);
-      border-top-color: #00D4C8;
-      border-radius: 50%;
-      animation: spin 0.85s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .pulse-ring {
-      position: absolute; width: 90px; height: 90px;
-      border: 2px solid rgba(0,212,200,0.3);
-      border-radius: 50%;
-      animation: pulse 1.5s ease-out infinite;
-    }
-    @keyframes pulse {
-      0% { transform: scale(0.85); opacity: 0.7; }
-      100% { transform: scale(1.4); opacity: 0; }
-    }
-
-    /* Before/After Slider */
+    /* Before/After */
     .ba-container {
       position: relative;
       overflow: hidden;
-      border-radius: 1rem;
+      border-radius: 8px;
       user-select: none;
-      max-height: 70vh;
+      background: #0f172a;
     }
     .ba-container img {
       display: block;
       width: 100%;
       height: auto;
-      max-height: 70vh;
+      max-height: 65vh;
       object-fit: contain;
     }
     .ba-after {
@@ -104,8 +62,8 @@
     .ba-handle {
       position: absolute;
       top: 0; bottom: 0;
-      width: 4px;
-      background: #00D4C8;
+      width: 2px;
+      background: #e2e8f0;
       left: 50%;
       transform: translateX(-50%);
       cursor: ew-resize;
@@ -116,244 +74,215 @@
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 36px; height: 36px;
-      background: #00D4C8;
+      width: 28px; height: 28px;
+      background: #f8fafc;
+      border: 2px solid #0f172a;
       border-radius: 50%;
-      box-shadow: 0 0 0 4px rgba(0,0,0,0.3);
-    }
-    .ba-handle::after {
-      content: '↔';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 14px;
-      color: #070B14;
-      font-weight: bold;
     }
 
-    /* Progress bar */
+    /* Loader */
+    .loader-overlay {
+      position: fixed; inset: 0;
+      background: rgba(2, 6, 23, 0.92);
+      z-index: 50;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .loader-overlay.show { opacity: 1; pointer-events: all; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 2.5px solid #1e293b;
+      border-top-color: #94a3b8;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .progress-track {
-      width: 220px;
-      height: 6px;
-      background: rgba(255,255,255,0.1);
+      width: 180px; height: 3px;
+      background: #1e293b;
       border-radius: 99px;
       overflow: hidden;
-      margin-top: 18px;
+      margin-top: 20px;
     }
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #00D4C8, #7B61FF);
-      border-radius: 99px;
+      background: #94a3b8;
       width: 0%;
-      transition: width 0.3s ease;
+      transition: width 0.25s ease;
     }
 
-    /* Theme */
-    html.light body { background: #f4f6f9; color: #0f172a; }
-    html.light .bg-card { background: white; border-color: #e2e8f0; }
-    html.light .text-muted { color: #64748b; }
+    /* Theme overrides */
+    html.light body { background: #f8fafc; color: #0f172a; }
+    html.light .border-default { border-color: #e2e8f0; }
+    html.light .bg-surface { background: #ffffff; }
+    html.light .text-secondary { color: #64748b; }
+    html.light .drop-zone { border-color: #cbd5e1; }
+    html.light .drop-zone.dragover { border-color: #64748b; background: #f1f5f9; }
   </style>
 </head>
-<body class="bg-[#070B14] text-white min-h-screen transition-colors duration-300">
+<body class="bg-slate-950 text-slate-100 min-h-screen">
 
-  <!-- Loading Overlay -->
+  <!-- Loader -->
   <div id="loader" class="loader-overlay">
-    <div class="relative flex items-center justify-center">
-      <div class="pulse-ring"></div>
-      <div class="spinner"></div>
-    </div>
-    <div class="mt-7 text-lg font-semibold" id="loaderTitle">Swapping faces...</div>
-    <div class="text-sm text-white/50 mt-1" id="loaderSub">Using Pro Swap engine</div>
+    <div class="spinner"></div>
+    <p class="mt-5 text-sm text-slate-400" id="loaderSub">Processing</p>
     <div class="progress-track">
       <div class="progress-fill" id="progressFill"></div>
     </div>
-    <div class="text-xs text-white/40 mt-2" id="progressText">0%</div>
+    <p class="text-xs text-slate-500 mt-2" id="progressText">0%</p>
   </div>
 
   <!-- Header -->
-  <header class="border-b border-white/10 dark:border-white/10 bg-[#070B14]/80 dark:bg-[#070B14]/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-      <a href="index.html" class="flex items-center gap-3 shrink-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00D4C8] to-[#7B61FF] flex items-center justify-center font-black text-sm">PRX</div>
-        <div class="hidden sm:block">
-          <h1 class="font-bold text-base tracking-tight">Face Swap Lab</h1>
-          <p class="text-[11px] text-white/50">Multi-Model Engine</p>
-        </div>
+  <header class="border-b border-slate-800/80 sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md">
+    <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-md bg-slate-100 text-slate-900 flex items-center justify-center text-xs font-bold tracking-tight">PRX</div>
+        <span class="text-sm font-medium tracking-tight">Face Swap</span>
       </a>
-
-      <div class="flex items-center gap-2">
-        <!-- Theme Toggle -->
-        <button id="themeBtn" class="p-2.5 rounded-xl border border-white/10 hover:bg-white/5 transition" title="Toggle theme">
-          <span id="themeIcon">🌙</span>
-        </button>
-        <a href="index.html" class="text-sm text-white/60 hover:text-white transition hidden sm:inline">← Home</a>
+      <div class="flex items-center gap-3">
+        <button id="themeBtn" class="text-slate-400 hover:text-slate-200 text-sm transition" title="Toggle theme">Theme</button>
+        <a href="index.html" class="text-sm text-slate-400 hover:text-slate-200 transition">Home</a>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
+  <main class="max-w-3xl mx-auto px-4 py-10">
 
     <!-- Title -->
-    <div class="text-center mb-8">
-      <h2 class="text-3xl md:text-4xl font-extrabold mb-1">AI Face Swap</h2>
-      <p class="text-white/55 text-sm">Upload • Choose model • Get studio results</p>
+    <div class="mb-8">
+      <h1 class="text-xl font-semibold tracking-tight">Face Swap</h1>
+      <p class="text-sm text-slate-400 mt-1">Upload a face and a target image. Results are processed client-side.</p>
     </div>
 
-    <!-- Controls Row -->
-    <div class="flex flex-wrap items-center justify-center gap-3 mb-8">
-      <!-- Model Selector -->
-      <div class="flex flex-wrap justify-center gap-2" id="modelSelector">
-        <button data-model="pro" class="model-btn active px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Pro</button>
-        <button data-model="classic" class="model-btn px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Classic</button>
-        <button data-model="deep" class="model-btn px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Deep</button>
-        <button data-model="remaker" class="model-btn px-4 py-2 rounded-xl border border-white/15 font-semibold text-sm transition">Remaker</button>
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6 text-sm">
+      <div class="flex items-center gap-2">
+        <span class="text-slate-500">Model</span>
+        <select id="modelSelect" class="bg-slate-900 border border-slate-700 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-slate-500">
+          <option value="pro">Pro</option>
+          <option value="classic">Classic</option>
+          <option value="deep">Deep</option>
+          <option value="remaker">Remaker</option>
+        </select>
       </div>
 
-      <!-- Compress Toggle -->
-      <label class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 cursor-pointer text-sm">
-        <input type="checkbox" id="compressToggle" checked class="accent-[#00D4C8]" />
-        <span>Compress images</span>
+      <label class="flex items-center gap-2 cursor-pointer text-slate-300">
+        <input type="checkbox" id="compressToggle" checked class="rounded border-slate-600" />
+        <span>Compress</span>
       </label>
 
-      <!-- Batch Toggle -->
-      <label class="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 cursor-pointer text-sm">
-        <input type="checkbox" id="batchToggle" class="accent-[#00D4C8]" />
-        <span>Batch mode</span>
+      <label class="flex items-center gap-2 cursor-pointer text-slate-300">
+        <input type="checkbox" id="batchToggle" class="rounded border-slate-600" />
+        <span>Batch</span>
       </label>
     </div>
 
-    <p id="modelDesc" class="text-center text-sm text-white/40 mb-6">Best quality • Direct upload • Recommended</p>
-
-    <!-- Upload Area -->
-    <div class="grid md:grid-cols-2 gap-5 mb-8">
-
-      <!-- Source Face -->
+    <!-- Upload -->
+    <div class="grid sm:grid-cols-2 gap-4 mb-6">
+      <!-- Source -->
       <div>
-        <label class="block text-sm font-medium text-white/70 mb-2">1. Source Face</label>
-        <div id="sourceZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-6 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[200px] flex flex-col items-center justify-center">
+        <label class="block text-xs font-medium text-slate-400 mb-1.5">Source face</label>
+        <div id="sourceZone" class="drop-zone border border-dashed border-slate-700 rounded-lg p-5 min-h-[160px] flex flex-col items-center justify-center cursor-pointer hover:border-slate-500">
           <input type="file" id="sourceInput" accept="image/*" class="hidden" />
-          <div id="sourcePreview" class="hidden w-full">
-            <img id="sourceImg" class="max-h-40 mx-auto rounded-xl object-cover" />
-            <p class="mt-2 text-xs text-white/50" id="sourceName"></p>
+          <div id="sourcePreview" class="hidden w-full text-center">
+            <img id="sourceImg" class="max-h-32 mx-auto rounded object-cover" />
+            <p class="mt-2 text-xs text-slate-500 truncate" id="sourceName"></p>
           </div>
-          <div id="sourcePlaceholder">
-            <div class="text-3xl mb-2">👤</div>
-            <p class="font-medium text-sm">Drop face image</p>
-            <p class="text-xs text-white/40 mt-1">or click</p>
+          <div id="sourcePlaceholder" class="text-center">
+            <p class="text-sm text-slate-400">Drop face image</p>
+            <p class="text-xs text-slate-600 mt-1">or click to browse</p>
           </div>
         </div>
-        <p id="faceTip" class="text-xs text-amber-400/80 mt-2 hidden">⚠ Better results with clear, front-facing faces</p>
+        <p id="faceTip" class="text-xs text-amber-600/90 mt-1.5 hidden">Clear, front-facing photos produce better results.</p>
       </div>
 
-      <!-- Target Image(s) -->
+      <!-- Target -->
       <div>
-        <label class="block text-sm font-medium text-white/70 mb-2">
-          2. Target Image<span id="batchLabel" class="hidden">s (multiple)</span>
-        </label>
-        <div id="targetZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-6 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[200px] flex flex-col items-center justify-center">
-          <input type="file" id="targetInput" accept="image/*" class="hidden" multiple />
-          <div id="targetPreview" class="hidden w-full">
-            <div id="targetThumbs" class="flex flex-wrap gap-2 justify-center"></div>
-            <p class="mt-2 text-xs text-white/50" id="targetName"></p>
+        <label class="block text-xs font-medium text-slate-400 mb-1.5">Target image<span id="batchLabel" class="hidden">s</span></label>
+        <div id="targetZone" class="drop-zone border border-dashed border-slate-700 rounded-lg p-5 min-h-[160px] flex flex-col items-center justify-center cursor-pointer hover:border-slate-500">
+          <input type="file" id="targetInput" accept="image/*" class="hidden" />
+          <div id="targetPreview" class="hidden w-full text-center">
+            <div id="targetThumbs" class="flex flex-wrap gap-1.5 justify-center"></div>
+            <p class="mt-2 text-xs text-slate-500" id="targetName"></p>
           </div>
-          <div id="targetPlaceholder">
-            <div class="text-3xl mb-2">🖼️</div>
-            <p class="font-medium text-sm">Drop target image</p>
-            <p class="text-xs text-white/40 mt-1">or click</p>
+          <div id="targetPlaceholder" class="text-center">
+            <p class="text-sm text-slate-400">Drop target image</p>
+            <p class="text-xs text-slate-600 mt-1">or click to browse</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="flex flex-wrap justify-center gap-3 mb-8">
+    <!-- Actions -->
+    <div class="flex items-center gap-3 mb-8">
       <button id="swapBtn" disabled
-        class="px-10 py-3.5 rounded-2xl font-bold text-base bg-gradient-to-r from-[#00D4C8] to-[#00A8A0] text-[#070B14] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 transition-all shadow-lg shadow-[#00D4C8]/15">
-        ⚡ Swap Faces
+        class="px-5 py-2 rounded-md bg-slate-100 text-slate-900 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition">
+        Swap faces
       </button>
-      <button id="clearBtn" class="px-6 py-3.5 rounded-2xl border border-white/15 hover:bg-white/5 transition text-sm font-medium">
-        Clear All
+      <button id="clearBtn" class="px-4 py-2 rounded-md border border-slate-700 text-sm text-slate-300 hover:bg-slate-900 transition">
+        Clear
       </button>
     </div>
 
     <!-- Status -->
-    <div id="status" class="text-center text-sm mb-6 hidden"></div>
+    <div id="status" class="text-sm mb-6 hidden"></div>
 
-    <!-- Result Area -->
+    <!-- Result -->
     <div id="resultArea" class="hidden mb-12">
-      <h3 class="text-lg font-bold text-center mb-4">Result</h3>
-
-      <!-- Before / After Slider -->
-      <div class="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6">
-        <div class="ba-container" id="baContainer">
-          <img id="baBefore" src="" alt="Before" />
-          <div class="ba-after" id="baAfterWrap">
-            <img id="baAfter" src="" alt="After" />
-          </div>
-          <div class="ba-handle" id="baHandle"></div>
-        </div>
-
-        <div class="mt-5 flex flex-wrap gap-3 justify-center">
-          <a id="downloadBtn" download="prx-faceswap.jpg"
-            class="px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition">
-            Download
-          </a>
-          <button id="shareBtn" class="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm font-medium">
-            Share
-          </button>
-          <button id="retryBtn" class="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm font-medium hidden">
-            Retry with Pro
-          </button>
-          <button onclick="resetAll()" class="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/5 transition text-sm">
-            New Swap
-          </button>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-300">Result</h2>
+        <div class="flex items-center gap-2">
+          <a id="downloadBtn" download="faceswap-result.jpg" class="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2">Download</a>
+          <button id="shareBtn" class="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2">Share</button>
+          <button id="retryBtn" class="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2 hidden">Retry with Pro</button>
         </div>
       </div>
 
-      <!-- Batch Results -->
-      <div id="batchResults" class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4 hidden"></div>
+      <div class="ba-container border border-slate-800" id="baContainer">
+        <img id="baBefore" src="" alt="Before" />
+        <div class="ba-after" id="baAfterWrap">
+          <img id="baAfter" src="" alt="After" />
+        </div>
+        <div class="ba-handle" id="baHandle"></div>
+      </div>
+
+      <div id="batchResults" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 hidden"></div>
     </div>
 
     <!-- History -->
-    <div id="historySection" class="mb-10 hidden">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-bold text-lg">Recent Swaps</h3>
-        <button id="clearHistory" class="text-xs text-white/40 hover:text-white/70">Clear history</button>
+    <div id="historySection" class="hidden">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-slate-300">Recent</h2>
+        <button id="clearHistory" class="text-xs text-slate-500 hover:text-slate-300">Clear</button>
       </div>
-      <div id="historyList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+      <div id="historyList" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
     </div>
 
   </main>
 
-  <!-- Community -->
-  <section class="border-t border-white/5 py-10">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-      <h3 class="text-base font-bold mb-3">Join Community</h3>
-      <div class="flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="https://whatsapp.com/channel/0029VbCEmPm1yT22tvtqWQ2l" target="_blank" rel="noopener"
-          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] text-black font-bold text-sm hover:scale-105 transition">
-          WhatsApp Channel
-        </a>
-        <a href="https://t.me/+86b1oCsDAxdhNjg8" target="_blank" rel="noopener"
-          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#229ED9] text-white font-bold text-sm hover:scale-105 transition">
-          Telegram Channel
-        </a>
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 mt-auto">
+    <div class="max-w-3xl mx-auto px-4 py-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
+        <div class="flex gap-4">
+          <a href="https://whatsapp.com/channel/0029VbCEmPm1yT22tvtqWQ2l" target="_blank" rel="noopener" class="text-slate-400 hover:text-slate-200 transition">WhatsApp</a>
+          <a href="https://t.me/+86b1oCsDAxdhNjg8" target="_blank" rel="noopener" class="text-slate-400 hover:text-slate-200 transition">Telegram</a>
+        </div>
+        <p class="text-xs text-slate-500">Built by Paradox Tech · Thanks to Paradox Tech and Omega Tech</p>
       </div>
     </div>
-  </section>
-
-  <footer class="border-t border-white/5 py-6 text-center text-white/40 text-xs">
-    <p class="mb-1">© 2026 PRX Face Swap Lab • Built by Paradox Tech</p>
-    <p>Thanks to <span class="text-white/60">Paradox Tech</span> and <span class="text-white/60">Omega Tech</span></p>
   </footer>
 
   <script>
-    // ==================== CONFIG ====================
     const MODELS = {
-      pro: { name: "Pro Swap", desc: "Best quality • Direct upload • Recommended", endpoint: "https://api.omegatech.app/api/tools/faceswap", type: "form" },
-      classic: { name: "Classic Swap", desc: "Reliable • Good balance of speed & quality", endpoint: "https://api.omegatech.app/api/ai/Faceawap", type: "form" },
-      deep: { name: "Deep Swap", desc: "Deep processing • Strong identity transfer", endpoint: "https://api.omegatech.app/api/ai/Deepfake", type: "url" },
-      remaker: { name: "Remaker Fast", desc: "Ultra fast • Great for quick previews", endpoint: "https://api.omegatech.app/api/ai/remaker", type: "url" }
+      pro:     { name: "Pro",     endpoint: "https://api.omegatech.app/api/tools/faceswap", type: "form" },
+      classic: { name: "Classic", endpoint: "https://api.omegatech.app/api/ai/Faceawap", type: "form" },
+      deep:    { name: "Deep",    endpoint: "https://api.omegatech.app/api/ai/Deepfake", type: "url" },
+      remaker: { name: "Remaker", endpoint: "https://api.omegatech.app/api/ai/remaker", type: "url" }
     };
 
     let currentModel = "pro";
@@ -363,305 +292,259 @@
     let lastTargetUrl = null;
     let progressInterval = null;
 
-    // ==================== ELEMENTS ====================
-    const sourceInput = document.getElementById('sourceInput');
-    const targetInput = document.getElementById('targetInput');
-    const sourceZone = document.getElementById('sourceZone');
-    const targetZone = document.getElementById('targetZone');
-    const swapBtn = document.getElementById('swapBtn');
-    const status = document.getElementById('status');
-    const resultArea = document.getElementById('resultArea');
-    const loader = document.getElementById('loader');
-    const loaderSub = document.getElementById('loaderSub');
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
-    const modelDesc = document.getElementById('modelDesc');
-    const batchToggle = document.getElementById('batchToggle');
-    const compressToggle = document.getElementById('compressToggle');
-    const faceTip = document.getElementById('faceTip');
-    const batchLabel = document.getElementById('batchLabel');
-    const batchResults = document.getElementById('batchResults');
-    const historySection = document.getElementById('historySection');
-    const historyList = document.getElementById('historyList');
-    const retryBtn = document.getElementById('retryBtn');
+    const $ = (id) => document.getElementById(id);
+    const sourceInput = $("sourceInput");
+    const targetInput = $("targetInput");
+    const sourceZone = $("sourceZone");
+    const targetZone = $("targetZone");
+    const swapBtn = $("swapBtn");
+    const statusEl = $("status");
+    const resultArea = $("resultArea");
+    const loader = $("loader");
+    const loaderSub = $("loaderSub");
+    const progressFill = $("progressFill");
+    const progressText = $("progressText");
+    const batchToggle = $("batchToggle");
+    const compressToggle = $("compressToggle");
+    const faceTip = $("faceTip");
+    const batchLabel = $("batchLabel");
+    const batchResults = $("batchResults");
+    const historySection = $("historySection");
+    const historyList = $("historyList");
+    const retryBtn = $("retryBtn");
+    const modelSelect = $("modelSelect");
 
-    // ==================== THEME ====================
-    const themeBtn = document.getElementById('themeBtn');
-    const themeIcon = document.getElementById('themeIcon');
+    // Theme
     const html = document.documentElement;
-
     function setTheme(mode) {
-      if (mode === 'light') {
-        html.classList.remove('dark');
-        html.classList.add('light');
-        themeIcon.textContent = '☀️';
-        localStorage.setItem('prx-theme', 'light');
+      if (mode === "light") {
+        html.classList.remove("dark");
+        html.classList.add("light");
+        localStorage.setItem("prx-theme", "light");
       } else {
-        html.classList.remove('light');
-        html.classList.add('dark');
-        themeIcon.textContent = '🌙';
-        localStorage.setItem('prx-theme', 'dark');
+        html.classList.remove("light");
+        html.classList.add("dark");
+        localStorage.setItem("prx-theme", "dark");
       }
     }
-    setTheme(localStorage.getItem('prx-theme') || 'dark');
-    themeBtn.onclick = () => setTheme(html.classList.contains('dark') ? 'light' : 'dark');
+    setTheme(localStorage.getItem("prx-theme") || "dark");
+    $("themeBtn").onclick = () => setTheme(html.classList.contains("dark") ? "light" : "dark");
 
-    // ==================== MODEL SELECT ====================
-    document.querySelectorAll('.model-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentModel = btn.dataset.model;
-        modelDesc.textContent = MODELS[currentModel].desc;
-      });
-    });
+    // Model
+    modelSelect.onchange = () => { currentModel = modelSelect.value; };
 
-    // ==================== BATCH TOGGLE ====================
-    batchToggle.addEventListener('change', () => {
+    // Batch
+    batchToggle.onchange = () => {
       targetInput.multiple = batchToggle.checked;
-      batchLabel.classList.toggle('hidden', !batchToggle.checked);
+      batchLabel.classList.toggle("hidden", !batchToggle.checked);
       if (!batchToggle.checked && targetFiles.length > 1) {
         targetFiles = targetFiles.slice(0, 1);
-        renderTargetPreviews();
+        renderTargets();
       }
-    });
+    };
 
-    // ==================== IMAGE COMPRESS ====================
-    async function compressImage(file, maxWidth = 1280, quality = 0.82) {
+    // Compress
+    async function compressImage(file, maxW = 1280, quality = 0.85) {
       if (!compressToggle.checked) return file;
       return new Promise((resolve) => {
         const img = new Image();
         const url = URL.createObjectURL(file);
         img.onload = () => {
-          const canvas = document.createElement('canvas');
+          const canvas = document.createElement("canvas");
           let w = img.width, h = img.height;
-          if (w > maxWidth) {
-            h = Math.round(h * maxWidth / w);
-            w = maxWidth;
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
+          if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
           canvas.toBlob((blob) => {
             URL.revokeObjectURL(url);
-            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-          }, 'image/jpeg', quality);
+            resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
+          }, "image/jpeg", quality);
         };
         img.onerror = () => resolve(file);
         img.src = url;
       });
     }
 
-    // ==================== DROP ZONES ====================
-    function setupDropZone(zone, input, onFiles) {
-      zone.addEventListener('click', () => input.click());
-      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-      zone.addEventListener('drop', e => {
+    // Drop zones
+    function setupZone(zone, input, handler) {
+      zone.onclick = () => input.click();
+      zone.ondragover = (e) => { e.preventDefault(); zone.classList.add("dragover"); };
+      zone.ondragleave = () => zone.classList.remove("dragover");
+      zone.ondrop = (e) => {
         e.preventDefault();
-        zone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) onFiles([...e.dataTransfer.files]);
-      });
-      input.addEventListener('change', () => {
-        if (input.files.length) onFiles([...input.files]);
-      });
+        zone.classList.remove("dragover");
+        if (e.dataTransfer.files.length) handler([...e.dataTransfer.files]);
+      };
+      input.onchange = () => { if (input.files.length) handler([...input.files]); };
     }
 
     function handleSource(files) {
       sourceFile = files[0];
       const url = URL.createObjectURL(sourceFile);
-      document.getElementById('sourceImg').src = url;
-      document.getElementById('sourceName').textContent = sourceFile.name;
-      document.getElementById('sourcePreview').classList.remove('hidden');
-      document.getElementById('sourcePlaceholder').classList.add('hidden');
-
-      // Quality tip
+      $("sourceImg").src = url;
+      $("sourceName").textContent = sourceFile.name;
+      $("sourcePreview").classList.remove("hidden");
+      $("sourcePlaceholder").classList.add("hidden");
       const img = new Image();
-      img.onload = () => {
-        if (img.width < 300 || img.height < 300) faceTip.classList.remove('hidden');
-        else faceTip.classList.add('hidden');
-      };
+      img.onload = () => faceTip.classList.toggle("hidden", img.width >= 280 && img.height >= 280);
       img.src = url;
       checkReady();
     }
 
     function handleTargets(files) {
-      if (batchToggle.checked) {
-        targetFiles = files.slice(0, 8); // max 8
-      } else {
-        targetFiles = [files[0]];
-      }
-      renderTargetPreviews();
+      targetFiles = batchToggle.checked ? files.slice(0, 6) : [files[0]];
+      renderTargets();
       checkReady();
     }
 
-    function renderTargetPreviews() {
-      const thumbs = document.getElementById('targetThumbs');
-      thumbs.innerHTML = '';
-      targetFiles.forEach((f, i) => {
-        const url = URL.createObjectURL(f);
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = 'h-24 w-24 object-cover rounded-lg';
+    function renderTargets() {
+      const thumbs = $("targetThumbs");
+      thumbs.innerHTML = "";
+      targetFiles.forEach(f => {
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(f);
+        img.className = "h-20 w-20 object-cover rounded";
         thumbs.appendChild(img);
       });
-      document.getElementById('targetName').textContent = targetFiles.length > 1
-        ? `${targetFiles.length} images selected`
-        : targetFiles[0]?.name || '';
-      document.getElementById('targetPreview').classList.remove('hidden');
-      document.getElementById('targetPlaceholder').classList.add('hidden');
+      $("targetName").textContent = targetFiles.length > 1 ? `${targetFiles.length} selected` : (targetFiles[0]?.name || "");
+      $("targetPreview").classList.remove("hidden");
+      $("targetPlaceholder").classList.add("hidden");
     }
 
-    setupDropZone(sourceZone, sourceInput, handleSource);
-    setupDropZone(targetZone, targetInput, handleTargets);
+    setupZone(sourceZone, sourceInput, handleSource);
+    setupZone(targetZone, targetInput, handleTargets);
 
     function checkReady() {
       swapBtn.disabled = !(sourceFile && targetFiles.length);
     }
 
-    document.getElementById('clearBtn').onclick = resetAll;
+    $("clearBtn").onclick = resetAll;
 
-    // ==================== LOADER + PROGRESS ====================
-    function showLoader(modelName) {
-      loaderSub.textContent = `Using ${modelName} engine`;
-      progressFill.style.width = '0%';
-      progressText.textContent = '0%';
-      loader.classList.add('show');
-
+    // Loader
+    function showLoader(msg) {
+      loaderSub.textContent = msg || "Processing";
+      progressFill.style.width = "0%";
+      progressText.textContent = "0%";
+      loader.classList.add("show");
       let p = 0;
       clearInterval(progressInterval);
       progressInterval = setInterval(() => {
-        p += Math.random() * 4 + 1;
-        if (p > 92) p = 92;
-        progressFill.style.width = p + '%';
-        progressText.textContent = Math.floor(p) + '%';
-      }, 400);
+        p = Math.min(90, p + Math.random() * 5 + 1);
+        progressFill.style.width = p + "%";
+        progressText.textContent = Math.floor(p) + "%";
+      }, 350);
     }
-
-    function finishProgress() {
-      clearInterval(progressInterval);
-      progressFill.style.width = '100%';
-      progressText.textContent = '100%';
-    }
-
     function hideLoader() {
-      finishProgress();
-      setTimeout(() => loader.classList.remove('show'), 300);
+      clearInterval(progressInterval);
+      progressFill.style.width = "100%";
+      progressText.textContent = "100%";
+      setTimeout(() => loader.classList.remove("show"), 250);
     }
 
-    // ==================== BEFORE / AFTER SLIDER ====================
-    function initBASlider(beforeUrl, afterUrl) {
-      const container = document.getElementById('baContainer');
-      const before = document.getElementById('baBefore');
-      const after = document.getElementById('baAfter');
-      const afterWrap = document.getElementById('baAfterWrap');
-      const handle = document.getElementById('baHandle');
+    // Before/After
+    function initSlider(beforeUrl, afterUrl) {
+      const container = $("baContainer");
+      const before = $("baBefore");
+      const after = $("baAfter");
+      const wrap = $("baAfterWrap");
+      const handle = $("baHandle");
 
       before.src = beforeUrl;
       after.src = afterUrl;
 
-      let isDragging = false;
-
-      function update(x) {
+      let dragging = false;
+      const update = (x) => {
         const rect = container.getBoundingClientRect();
-        let percent = ((x - rect.left) / rect.width) * 100;
-        percent = Math.max(5, Math.min(95, percent));
-        afterWrap.style.width = percent + '%';
-        handle.style.left = percent + '%';
-      }
-
-      handle.onmousedown = (e) => { isDragging = true; e.preventDefault(); };
-      window.onmouseup = () => isDragging = false;
-      window.onmousemove = (e) => { if (isDragging) update(e.clientX); };
-
-      handle.ontouchstart = (e) => { isDragging = true; };
-      window.ontouchend = () => isDragging = false;
-      window.ontouchmove = (e) => {
-        if (isDragging) update(e.touches[0].clientX);
+        let pct = ((x - rect.left) / rect.width) * 100;
+        pct = Math.max(4, Math.min(96, pct));
+        wrap.style.width = pct + "%";
+        handle.style.left = pct + "%";
       };
 
+      handle.onmousedown = (e) => { dragging = true; e.preventDefault(); };
+      window.onmouseup = () => dragging = false;
+      window.onmousemove = (e) => { if (dragging) update(e.clientX); };
+      handle.ontouchstart = () => dragging = true;
+      window.ontouchend = () => dragging = false;
+      window.ontouchmove = (e) => { if (dragging) update(e.touches[0].clientX); };
       container.onclick = (e) => update(e.clientX);
 
-      // Reset to middle
-      afterWrap.style.width = '50%';
-      handle.style.left = '50%';
+      wrap.style.width = "50%";
+      handle.style.left = "50%";
     }
 
-    // ==================== HISTORY ====================
+    // History
     function loadHistory() {
-      const items = JSON.parse(localStorage.getItem('prx-history') || '[]');
-      if (!items.length) {
-        historySection.classList.add('hidden');
-        return;
-      }
-      historySection.classList.remove('hidden');
-      historyList.innerHTML = '';
-      items.forEach((item, idx) => {
-        const div = document.createElement('div');
-        div.className = 'relative group rounded-xl overflow-hidden border border-white/10';
+      const items = JSON.parse(localStorage.getItem("prx-history") || "[]");
+      if (!items.length) { historySection.classList.add("hidden"); return; }
+      historySection.classList.remove("hidden");
+      historyList.innerHTML = "";
+      items.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "relative group rounded overflow-hidden border border-slate-800";
         div.innerHTML = `
-          <img src="${item.url}" class="w-full h-28 object-cover" />
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-            <a href="${item.url}" download="prx-history-${idx}.jpg" class="px-3 py-1.5 bg-white text-black text-xs font-bold rounded-lg">Save</a>
-          </div>
+          <img src="${item.url}" class="w-full h-24 object-cover" />
+          <a href="${item.url}" download="result-${i}.jpg" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-medium transition">Save</a>
         `;
         historyList.appendChild(div);
       });
     }
 
-    function saveToHistory(blob) {
+    function saveHistory(blob) {
       const reader = new FileReader();
       reader.onload = () => {
-        let items = JSON.parse(localStorage.getItem('prx-history') || '[]');
+        let items = JSON.parse(localStorage.getItem("prx-history") || "[]");
         items.unshift({ url: reader.result, ts: Date.now() });
-        items = items.slice(0, 8);
-        localStorage.setItem('prx-history', JSON.stringify(items));
+        localStorage.setItem("prx-history", JSON.stringify(items.slice(0, 8)));
         loadHistory();
       };
       reader.readAsDataURL(blob);
     }
 
-    document.getElementById('clearHistory').onclick = () => {
-      localStorage.removeItem('prx-history');
+    $("clearHistory").onclick = () => {
+      localStorage.removeItem("prx-history");
       loadHistory();
     };
 
-    // ==================== SHARE ====================
-    document.getElementById('shareBtn').onclick = async () => {
+    // Share
+    $("shareBtn").onclick = async () => {
       if (!lastResultBlob) return;
       try {
-        if (navigator.share && navigator.canShare) {
-          const file = new File([lastResultBlob], 'prx-faceswap.jpg', { type: 'image/jpeg' });
-          await navigator.share({ files: [file], title: 'PRX Face Swap' });
+        const file = new File([lastResultBlob], "faceswap.jpg", { type: "image/jpeg" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Face Swap" });
         } else {
-          // Fallback: copy image to clipboard if possible, else download
-          await navigator.clipboard.write([new ClipboardItem({ 'image/jpeg': lastResultBlob })]);
-          status.classList.remove('hidden');
-          status.innerHTML = '<span class="text-[#00D4C8]">Image copied to clipboard</span>';
+          await navigator.clipboard.write([new ClipboardItem({ "image/jpeg": lastResultBlob })]);
+          showStatus("Copied to clipboard", false);
         }
-      } catch (e) {
-        // Final fallback
-        const a = document.createElement('a');
+      } catch {
+        const a = document.createElement("a");
         a.href = URL.createObjectURL(lastResultBlob);
-        a.download = 'prx-faceswap.jpg';
+        a.download = "faceswap.jpg";
         a.click();
       }
     };
 
-    // ==================== CORE SWAP ====================
+    function showStatus(msg, isError = false) {
+      statusEl.classList.remove("hidden");
+      statusEl.innerHTML = isError
+        ? `<span class="text-red-400">${msg}</span>`
+        : `<span class="text-slate-300">${msg}</span>`;
+    }
+
+    // Core
     async function doSwap(forcePro = false) {
       if (!sourceFile || !targetFiles.length) return;
 
-      const modelKey = forcePro ? 'pro' : currentModel;
-      const model = MODELS[modelKey];
+      const key = forcePro ? "pro" : currentModel;
+      const model = MODELS[key];
 
       swapBtn.disabled = true;
-      status.classList.add('hidden');
-      resultArea.classList.add('hidden');
-      batchResults.classList.add('hidden');
-      batchResults.innerHTML = '';
-      retryBtn.classList.add('hidden');
+      statusEl.classList.add("hidden");
+      resultArea.classList.add("hidden");
+      batchResults.classList.add("hidden");
+      batchResults.innerHTML = "";
+      retryBtn.classList.add("hidden");
       showLoader(model.name);
 
       try {
@@ -669,10 +552,7 @@
         const results = [];
 
         for (let i = 0; i < targetFiles.length; i++) {
-          loaderSub.textContent = targetFiles.length > 1
-            ? `Processing ${i + 1}/${targetFiles.length} • ${model.name}`
-            : `Using ${model.name} engine`;
-
+          if (targetFiles.length > 1) loaderSub.textContent = `${model.name} · ${i + 1}/${targetFiles.length}`;
           const target = await compressImage(targetFiles[i]);
           const blob = await callEngine(model, face, target);
           results.push(blob);
@@ -681,37 +561,33 @@
             lastResultBlob = blob;
             lastTargetUrl = URL.createObjectURL(targetFiles[0]);
             const resultUrl = URL.createObjectURL(blob);
-            document.getElementById('downloadBtn').href = resultUrl;
-            initBASlider(lastTargetUrl, resultUrl);
-            saveToHistory(blob);
+            $("downloadBtn").href = resultUrl;
+            initSlider(lastTargetUrl, resultUrl);
+            saveHistory(blob);
           }
         }
 
-        // Show single or batch
-        resultArea.classList.remove('hidden');
+        resultArea.classList.remove("hidden");
         if (results.length > 1) {
-          batchResults.classList.remove('hidden');
+          batchResults.classList.remove("hidden");
           results.forEach((blob, idx) => {
             const url = URL.createObjectURL(blob);
-            const card = document.createElement('div');
-            card.className = 'rounded-xl overflow-hidden border border-white/10';
+            const card = document.createElement("div");
+            card.className = "rounded overflow-hidden border border-slate-800";
             card.innerHTML = `
               <img src="${url}" class="w-full aspect-square object-cover" />
-              <a href="${url}" download="prx-batch-${idx + 1}.jpg" class="block text-center py-2 text-xs font-medium bg-white/5 hover:bg-white/10">Download #${idx + 1}</a>
+              <a href="${url}" download="batch-${idx + 1}.jpg" class="block text-center py-1.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-900/50">Download</a>
             `;
             batchResults.appendChild(card);
           });
         }
 
-        status.classList.remove('hidden');
-        status.innerHTML = `<span class="text-[#00D4C8]">✅ Done with ${model.name}${results.length > 1 ? ` • ${results.length} images` : ''}</span>`;
-
+        showStatus(results.length > 1 ? `Completed · ${results.length} images` : "Completed");
       } catch (err) {
         console.error(err);
-        status.classList.remove('hidden');
-        status.innerHTML = `<span class="text-red-400">❌ ${err.message}</span>`;
-        if (currentModel !== 'pro') {
-          retryBtn.classList.remove('hidden');
+        showStatus(err.message || "Request failed", true);
+        if (currentModel !== "pro") {
+          retryBtn.classList.remove("hidden");
           retryBtn.onclick = () => doSwap(true);
         }
       } finally {
@@ -723,78 +599,80 @@
     async function callEngine(model, faceFile, targetFile) {
       let res;
 
-      if (model.type === 'form') {
-        const formData = new FormData();
-        if (model.name.includes('Pro')) {
-          formData.append('source', faceFile);
-          formData.append('target', targetFile);
+      if (model.type === "form") {
+        const fd = new FormData();
+        if (model.name === "Pro") {
+          fd.append("source", faceFile);
+          fd.append("target", targetFile);
         } else {
-          formData.append('action', 'swap');
-          formData.append('faceFile', faceFile);
-          formData.append('sourceFile', targetFile);
-          formData.append('raw', 'true');
+          fd.append("action", "swap");
+          fd.append("faceFile", faceFile);
+          fd.append("sourceFile", targetFile);
+          fd.append("raw", "true");
         }
-        res = await fetch(model.endpoint, { method: 'POST', body: formData });
+        res = await fetch(model.endpoint, { method: "POST", body: fd });
       } else {
-        const formData = new FormData();
-        formData.append('source_image', faceFile);
-        formData.append('target_image', targetFile);
-        formData.append('face', faceFile);
-        formData.append('target', targetFile);
-        res = await fetch(model.endpoint, { method: 'POST', body: formData });
+        const fd = new FormData();
+        fd.append("source_image", faceFile);
+        fd.append("target_image", targetFile);
+        fd.append("face", faceFile);
+        fd.append("target", targetFile);
+        res = await fetch(model.endpoint, { method: "POST", body: fd });
       }
 
-      // Fallback
-      if (!res.ok && model.name !== 'Pro Swap') {
-        loaderSub.textContent = 'Falling back to Pro Swap...';
-        const formData = new FormData();
-        formData.append('source', faceFile);
-        formData.append('target', targetFile);
-        res = await fetch(MODELS.pro.endpoint, { method: 'POST', body: formData });
+      if (!res.ok && model.name !== "Pro") {
+        loaderSub.textContent = "Retrying with Pro";
+        const fd = new FormData();
+        fd.append("source", faceFile);
+        fd.append("target", targetFile);
+        res = await fetch(MODELS.pro.endpoint, { method: "POST", body: fd });
       }
 
       if (!res.ok) {
-        const t = await res.text();
-        throw new Error(`Engine error ${res.status}: ${t.slice(0, 120)}`);
+        let msg = `Error ${res.status}`;
+        try {
+          const t = await res.text();
+          if (t) msg += `: ${t.slice(0, 100)}`;
+        } catch {}
+        throw new Error(msg);
       }
 
-      const ct = res.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
         const json = await res.json();
         const b64 = json.image || json.result || json.base64 || json.data?.image || json.output;
         if (b64) {
-          const pure = b64.replace(/^data:image\/\w+;base64,/, '');
+          const pure = String(b64).replace(/^data:image\/\w+;base64,/, "");
           const bytes = Uint8Array.from(atob(pure), c => c.charCodeAt(0));
-          return new Blob([bytes], { type: 'image/jpeg' });
+          return new Blob([bytes], { type: "image/jpeg" });
         }
         if (json.url || json.image_url) {
           const r = await fetch(json.url || json.image_url);
           return await r.blob();
         }
-        throw new Error('Unexpected response');
+        throw new Error("Unexpected response format");
       }
       return await res.blob();
     }
 
-    swapBtn.addEventListener('click', () => doSwap(false));
+    swapBtn.onclick = () => doSwap(false);
 
     function resetAll() {
       sourceFile = null;
       targetFiles = [];
-      sourceInput.value = '';
-      targetInput.value = '';
-      document.getElementById('sourcePreview').classList.add('hidden');
-      document.getElementById('sourcePlaceholder').classList.remove('hidden');
-      document.getElementById('targetPreview').classList.add('hidden');
-      document.getElementById('targetPlaceholder').classList.remove('hidden');
-      document.getElementById('targetThumbs').innerHTML = '';
-      resultArea.classList.add('hidden');
-      status.classList.add('hidden');
-      faceTip.classList.add('hidden');
+      sourceInput.value = "";
+      targetInput.value = "";
+      $("sourcePreview").classList.add("hidden");
+      $("sourcePlaceholder").classList.remove("hidden");
+      $("targetPreview").classList.add("hidden");
+      $("targetPlaceholder").classList.remove("hidden");
+      $("targetThumbs").innerHTML = "";
+      resultArea.classList.add("hidden");
+      statusEl.classList.add("hidden");
+      faceTip.classList.add("hidden");
       checkReady();
     }
 
-    // Init
     loadHistory();
   </script>
 </body>
