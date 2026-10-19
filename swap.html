@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Face Swap Tool | PRX Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .drop-zone { transition: all 0.2s ease; }
+    .drop-zone.dragover {
+      border-color: #00D4C8;
+      background: rgba(0, 212, 200, 0.08);
+      transform: scale(1.02);
+    }
+    .result-img { animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .model-btn.active {
+      background: linear-gradient(135deg, #00D4C8, #00A8A0);
+      color: #070B14;
+      border-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-[#070B14] text-white min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-white/10 bg-[#070B14]/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00D4C8] to-[#7B61FF] flex items-center justify-center font-black text-sm">PRX</div>
+        <div>
+          <h1 class="font-bold text-lg tracking-tight">Face Swap Lab</h1>
+          <p class="text-xs text-white/50">Multi-Model Engine</p>
+        </div>
+      </a>
+      <a href="index.html" class="text-sm text-white/60 hover:text-white transition">← Back to Home</a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-10">
+
+    <!-- Title -->
+    <div class="text-center mb-10">
+      <h2 class="text-3xl md:text-4xl font-extrabold mb-2">AI Face Swap</h2>
+      <p class="text-white/60">Upload face + target • Choose model • Get result</p>
+    </div>
+
+    <!-- Model Selector -->
+    <div class="mb-10">
+      <label class="block text-sm font-medium text-white/70 mb-3 text-center">Select Engine / Model</label>
+      <div class="flex flex-wrap justify-center gap-3" id="modelSelector">
+        <button data-model="pro" class="model-btn active px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
+          Pro Swap
+        </button>
+        <button data-model="classic" class="model-btn px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
+          Classic Swap
+        </button>
+        <button data-model="deep" class="model-btn px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
+          Deep Swap
+        </button>
+        <button data-model="remaker" class="model-btn px-5 py-2.5 rounded-xl border border-white/15 font-semibold text-sm transition hover:border-[#00D4C8]/50">
+          Remaker Fast
+        </button>
+      </div>
+      <p id="modelDesc" class="text-center text-sm text-white/40 mt-3">Best quality • Supports direct file upload • Recommended</p>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="grid md:grid-cols-2 gap-6 mb-10">
+
+      <!-- Source Face -->
+      <div>
+        <label class="block text-sm font-medium text-white/70 mb-2">1. Source Face (face to apply)</label>
+        <div id="sourceZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-8 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[220px] flex flex-col items-center justify-center">
+          <input type="file" id="sourceInput" accept="image/*" class="hidden" />
+          <div id="sourcePreview" class="hidden w-full">
+            <img id="sourceImg" class="max-h-48 mx-auto rounded-xl object-cover" />
+            <p class="mt-3 text-sm text-white/50" id="sourceName"></p>
+          </div>
+          <div id="sourcePlaceholder">
+            <div class="text-4xl mb-3">👤</div>
+            <p class="font-medium">Drop face image here</p>
+            <p class="text-sm text-white/40 mt-1">or click to browse</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Image -->
+      <div>
+        <label class="block text-sm font-medium text-white/70 mb-2">2. Target Image (body / background)</label>
+        <div id="targetZone" class="drop-zone border-2 border-dashed border-white/20 rounded-2xl p-8 text-center cursor-pointer hover:border-[#00D4C8]/50 min-h-[220px] flex flex-col items-center justify-center">
+          <input type="file" id="targetInput" accept="image/*" class="hidden" />
+          <div id="targetPreview" class="hidden w-full">
+            <img id="targetImg" class="max-h-48 mx-auto rounded-xl object-cover" />
+            <p class="mt-3 text-sm text-white/50" id="targetName"></p>
+          </div>
+          <div id="targetPlaceholder">
+            <div class="text-4xl mb-3">🖼️</div>
+            <p class="font-medium">Drop target image here</p>
+            <p class="text-sm text-white/40 mt-1">or click to browse</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action -->
+    <div class="flex justify-center mb-8">
+      <button id="swapBtn" disabled
+        class="px-12 py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-[#00D4C8] to-[#00A8A0] text-[#070B14] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 transition-all shadow-lg shadow-[#00D4C8]/20">
+        ⚡ Swap Faces Now
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div id="status" class="text-center text-white/60 mb-8 hidden"></div>
+
+    <!-- Result -->
+    <div id="resultArea" class="hidden">
+      <h3 class="text-xl font-bold text-center mb-4">Result</h3>
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col items-center">
+        <img id="resultImg" class="result-img max-w-full max-h-[70vh] rounded-xl shadow-2xl" />
+        <div class="mt-6 flex flex-wrap gap-4 justify-center">
+          <a id="downloadBtn" download="prx-faceswap-result.jpg"
+            class="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition">
+            Download Result
+          </a>
+          <button onclick="resetAll()" class="px-6 py-3 rounded-xl border border-white/20 hover:bg-white/5 transition">
+            Start Over
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Contacts -->
+  <section class="border-t border-white/5 py-12">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h3 class="text-lg font-bold mb-4">Join Community</h3>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="https://whatsapp.com/channel/0029VbCEmPm1yT22tvtqWQ2l" target="_blank" rel="noopener"
+          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#25D366] text-black font-bold text-sm hover:scale-105 transition">
+          WhatsApp Channel
+        </a>
+        <a href="https://t.me/+86b1oCsDAxdhNjg8" target="_blank" rel="noopener"
+          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#229ED9] text-white font-bold text-sm hover:scale-105 transition">
+          Telegram Channel
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-white/5 py-8 text-center text-white/40 text-sm">
+    <p class="mb-1">© 2026 PRX Face Swap Lab • Built by Paradox Tech</p>
+    <p>Thanks to <span class="text-white/60">Paradox Tech</span> and <span class="text-white/60">Omega Tech</span></p>
+  </footer>
+
+  <script>
+    // ========== MODEL CONFIG ==========
+    const MODELS = {
+      pro: {
+        name: "Pro Swap",
+        desc: "Best quality • Supports direct file upload • Recommended",
+        endpoint: "https://api.omegatech.app/api/tools/faceswap",
+        type: "form",
+        fields: { source: "source", target: "target" } // source = face, target = body
+      },
+      classic: {
+        name: "Classic Swap",
+        desc: "Reliable classic engine • Good balance of speed & quality",
+        endpoint: "https://api.omegatech.app/api/ai/Faceawap",
+        type: "form",
+        fields: { face: "faceFile", body: "sourceFile", extra: { action: "swap", raw: "true" } }
+      },
+      deep: {
+        name: "Deep Swap",
+        desc: "Deep processing • Strong identity transfer",
+        endpoint: "https://api.omegatech.app/api/ai/Deepfake",
+        type: "url", // will convert files to base64 data URLs if needed, but primarily expects URLs
+        // fallback behavior handled in code
+      },
+      remaker: {
+        name: "Remaker Fast",
+        desc: "Ultra fast • Great for quick previews",
+        endpoint: "https://api.omegatech.app/api/ai/remaker",
+        type: "url"
+      }
+    };
+
+    let currentModel = "pro";
+    let sourceFile = null;
+    let targetFile = null;
+
+    // ========== UI SETUP ==========
+    const sourceInput = document.getElementById('sourceInput');
+    const targetInput = document.getElementById('targetInput');
+    const sourceZone = document.getElementById('sourceZone');
+    const targetZone = document.getElementById('targetZone');
+    const swapBtn = document.getElementById('swapBtn');
+    const status = document.getElementById('status');
+    const resultArea = document.getElementById('resultArea');
+    const resultImg = document.getElementById('resultImg');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const modelDesc = document.getElementById('modelDesc');
+
+    // Model selector
+    document.querySelectorAll('.model-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentModel = btn.dataset.model;
+        modelDesc.textContent = MODELS[currentModel].desc;
+      });
+    });
+
+    // Drag & Drop
+    function setupDropZone(zone, input, onFile) {
+      zone.addEventListener('click', () => input.click());
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]);
+      });
+      input.addEventListener('change', () => { if (input.files[0]) onFile(input.files[0]); });
+    }
+
+    function handleSource(file) {
+      sourceFile = file;
+      const url = URL.createObjectURL(file);
+      document.getElementById('sourceImg').src = url;
+      document.getElementById('sourceName').textContent = file.name;
+      document.getElementById('sourcePreview').classList.remove('hidden');
+      document.getElementById('sourcePlaceholder').classList.add('hidden');
+      checkReady();
+    }
+
+    function handleTarget(file) {
+      targetFile = file;
+      const url = URL.createObjectURL(file);
+      document.getElementById('targetImg').src = url;
+      document.getElementById('targetName').textContent = file.name;
+      document.getElementById('targetPreview').classList.remove('hidden');
+      document.getElementById('targetPlaceholder').classList.add('hidden');
+      checkReady();
+    }
+
+    setupDropZone(sourceZone, sourceInput, handleSource);
+    setupDropZone(targetZone, targetInput, handleTarget);
+
+    function checkReady() {
+      swapBtn.disabled = !(sourceFile && targetFile);
+    }
+
+    // Convert file to base64 data URL (for URL-based endpoints)
+    function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ========== MAIN SWAP ==========
+    async function doSwap() {
+      if (!sourceFile || !targetFile) return;
+
+      swapBtn.disabled = true;
+      status.classList.remove('hidden');
+      status.innerHTML = `<span class="inline-block animate-pulse">Processing with ${MODELS[currentModel].name}... 5–25s</span>`;
+      resultArea.classList.add('hidden');
+
+      const model = MODELS[currentModel];
+      let res;
+
+      try {
+        if (model.type === "form") {
+          const formData = new FormData();
+
+          if (currentModel === "pro") {
+            formData.append("source", sourceFile); // face
+            formData.append("target", targetFile); // body
+          } else if (currentModel === "classic") {
+            formData.append("action", "swap");
+            formData.append("faceFile", sourceFile);
+            formData.append("sourceFile", targetFile);
+            formData.append("raw", "true");
+          }
+
+          res = await fetch(model.endpoint, { method: "POST", body: formData });
+        } else {
+          // URL-based models – convert to data URLs (many of these accept data: URLs or public URLs)
+          // For reliability we try FormData first as backup, then pure URL style
+          const faceData = await fileToDataURL(sourceFile);
+          const targetData = await fileToDataURL(targetFile);
+
+          // Try common patterns
+          const formData = new FormData();
+          formData.append("source_image", sourceFile);
+          formData.append("target_image", targetFile);
+          formData.append("face", sourceFile);
+          formData.append("target", targetFile);
+
+          res = await fetch(model.endpoint, { method: "POST", body: formData });
+
+          // If that fails, try JSON with data URLs
+          if (!res.ok) {
+            res = await fetch(model.endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sourceUrl: faceData,
+                faceUrl: faceData,
+                targetUrl: targetData,
+                source_image: faceData,
+                target_image: targetData
+              })
+            });
+          }
+        }
+
+        // Fallback chain if primary fails
+        if (!res.ok && currentModel !== "pro") {
+          console.warn("Primary model failed, falling back to Pro...");
+          status.innerHTML = `<span class="inline-block animate-pulse">Falling back to Pro Swap...</span>`;
+          const formData = new FormData();
+          formData.append("source", sourceFile);
+          formData.append("target", targetFile);
+          res = await fetch(MODELS.pro.endpoint, { method: "POST", body: formData });
+        }
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Engine error ${res.status}: ${errText.slice(0, 180)}`);
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        let blob;
+
+        if (contentType.includes("application/json")) {
+          const json = await res.json();
+          // Handle common response shapes that return base64 or URL
+          const b64 = json.image || json.result || json.base64 || json.data?.image || json.output;
+          if (b64 && typeof b64 === "string") {
+            const pure = b64.replace(/^data:image\/\w+;base64,/, "");
+            const byteChars = atob(pure);
+            const byteNumbers = new Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+            blob = new Blob([new Uint8Array(byteNumbers)], { type: "image/jpeg" });
+          } else if (json.url || json.image_url) {
+            const imgRes = await fetch(json.url || json.image_url);
+            blob = await imgRes.blob();
+          } else {
+            throw new Error("Unexpected JSON response format");
+          }
+        } else {
+          blob = await res.blob();
+        }
+
+        const url = URL.createObjectURL(blob);
+        resultImg.src = url;
+        downloadBtn.href = url;
+        resultArea.classList.remove("hidden");
+        status.innerHTML = `<span class="text-[#00D4C8]">✅ Done with ${MODELS[currentModel].name}</span>`;
+
+      } catch (err) {
+        console.error(err);
+        status.innerHTML = `<span class="text-red-400">❌ Failed: ${err.message}</span>`;
+      } finally {
+        swapBtn.disabled = false;
+      }
+    }
+
+    swapBtn.addEventListener("click", doSwap);
+
+    function resetAll() {
+      sourceFile = null;
+      targetFile = null;
+      sourceInput.value = "";
+      targetInput.value = "";
+      document.getElementById("sourcePreview").classList.add("hidden");
+      document.getElementById("sourcePlaceholder").classList.remove("hidden");
+      document.getElementById("targetPreview").classList.add("hidden");
+      document.getElementById("targetPlaceholder").classList.remove("hidden");
+      resultArea.classList.add("hidden");
+      status.classList.add("hidden");
+      checkReady();
+    }
+  </script>
+</body>
+</html>
