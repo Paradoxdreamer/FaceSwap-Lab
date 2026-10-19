@@ -24,9 +24,89 @@
       color: #070B14;
       border-color: transparent;
     }
+
+    /* ===== LOADING ANIMATION ===== */
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 20, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .loader-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .spinner {
+      width: 72px;
+      height: 72px;
+      border: 4px solid rgba(0, 212, 200, 0.15);
+      border-top-color: #00D4C8;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .pulse-ring {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      border: 2px solid rgba(0, 212, 200, 0.35);
+      border-radius: 50%;
+      animation: pulse 1.6s ease-out infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.85); opacity: 0.8; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+
+    .loader-text {
+      margin-top: 28px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .loader-sub {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .dots::after {
+      content: '';
+      animation: dots 1.4s steps(4, end) infinite;
+    }
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
   </style>
 </head>
 <body class="bg-[#070B14] text-white min-h-screen">
+
+  <!-- Loading Overlay -->
+  <div id="loader" class="loader-overlay">
+    <div class="relative flex items-center justify-center">
+      <div class="pulse-ring"></div>
+      <div class="spinner"></div>
+    </div>
+    <div class="loader-text">
+      Swapping faces<span class="dots"></span>
+    </div>
+    <div class="loader-sub" id="loaderSub">Using Pro Swap engine</div>
+  </div>
 
   <!-- Header -->
   <header class="border-b border-white/10 bg-[#070B14]/80 backdrop-blur sticky top-0 z-50">
@@ -167,22 +247,19 @@
         name: "Pro Swap",
         desc: "Best quality • Supports direct file upload • Recommended",
         endpoint: "https://api.omegatech.app/api/tools/faceswap",
-        type: "form",
-        fields: { source: "source", target: "target" } // source = face, target = body
+        type: "form"
       },
       classic: {
         name: "Classic Swap",
         desc: "Reliable classic engine • Good balance of speed & quality",
         endpoint: "https://api.omegatech.app/api/ai/Faceawap",
-        type: "form",
-        fields: { face: "faceFile", body: "sourceFile", extra: { action: "swap", raw: "true" } }
+        type: "form"
       },
       deep: {
         name: "Deep Swap",
         desc: "Deep processing • Strong identity transfer",
         endpoint: "https://api.omegatech.app/api/ai/Deepfake",
-        type: "url", // will convert files to base64 data URLs if needed, but primarily expects URLs
-        // fallback behavior handled in code
+        type: "url"
       },
       remaker: {
         name: "Remaker Fast",
@@ -207,6 +284,8 @@
     const resultImg = document.getElementById('resultImg');
     const downloadBtn = document.getElementById('downloadBtn');
     const modelDesc = document.getElementById('modelDesc');
+    const loader = document.getElementById('loader');
+    const loaderSub = document.getElementById('loaderSub');
 
     // Model selector
     document.querySelectorAll('.model-btn').forEach(btn => {
@@ -258,7 +337,16 @@
       swapBtn.disabled = !(sourceFile && targetFile);
     }
 
-    // Convert file to base64 data URL (for URL-based endpoints)
+    function showLoader(modelName) {
+      loaderSub.textContent = `Using ${modelName} engine`;
+      loader.classList.add('show');
+    }
+
+    function hideLoader() {
+      loader.classList.remove('show');
+    }
+
+    // Convert file to base64 data URL
     function fileToDataURL(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -273,9 +361,9 @@
       if (!sourceFile || !targetFile) return;
 
       swapBtn.disabled = true;
-      status.classList.remove('hidden');
-      status.innerHTML = `<span class="inline-block animate-pulse">Processing with ${MODELS[currentModel].name}... 5–25s</span>`;
+      status.classList.add('hidden');
       resultArea.classList.add('hidden');
+      showLoader(MODELS[currentModel].name);
 
       const model = MODELS[currentModel];
       let res;
@@ -285,8 +373,8 @@
           const formData = new FormData();
 
           if (currentModel === "pro") {
-            formData.append("source", sourceFile); // face
-            formData.append("target", targetFile); // body
+            formData.append("source", sourceFile);
+            formData.append("target", targetFile);
           } else if (currentModel === "classic") {
             formData.append("action", "swap");
             formData.append("faceFile", sourceFile);
@@ -296,12 +384,6 @@
 
           res = await fetch(model.endpoint, { method: "POST", body: formData });
         } else {
-          // URL-based models – convert to data URLs (many of these accept data: URLs or public URLs)
-          // For reliability we try FormData first as backup, then pure URL style
-          const faceData = await fileToDataURL(sourceFile);
-          const targetData = await fileToDataURL(targetFile);
-
-          // Try common patterns
           const formData = new FormData();
           formData.append("source_image", sourceFile);
           formData.append("target_image", targetFile);
@@ -310,8 +392,9 @@
 
           res = await fetch(model.endpoint, { method: "POST", body: formData });
 
-          // If that fails, try JSON with data URLs
           if (!res.ok) {
+            const faceData = await fileToDataURL(sourceFile);
+            const targetData = await fileToDataURL(targetFile);
             res = await fetch(model.endpoint, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -326,10 +409,9 @@
           }
         }
 
-        // Fallback chain if primary fails
+        // Fallback to Pro
         if (!res.ok && currentModel !== "pro") {
-          console.warn("Primary model failed, falling back to Pro...");
-          status.innerHTML = `<span class="inline-block animate-pulse">Falling back to Pro Swap...</span>`;
+          loaderSub.textContent = "Falling back to Pro Swap...";
           const formData = new FormData();
           formData.append("source", sourceFile);
           formData.append("target", targetFile);
@@ -346,7 +428,6 @@
 
         if (contentType.includes("application/json")) {
           const json = await res.json();
-          // Handle common response shapes that return base64 or URL
           const b64 = json.image || json.result || json.base64 || json.data?.image || json.output;
           if (b64 && typeof b64 === "string") {
             const pure = b64.replace(/^data:image\/\w+;base64,/, "");
@@ -368,12 +449,15 @@
         resultImg.src = url;
         downloadBtn.href = url;
         resultArea.classList.remove("hidden");
+        status.classList.remove("hidden");
         status.innerHTML = `<span class="text-[#00D4C8]">✅ Done with ${MODELS[currentModel].name}</span>`;
 
       } catch (err) {
         console.error(err);
+        status.classList.remove("hidden");
         status.innerHTML = `<span class="text-red-400">❌ Failed: ${err.message}</span>`;
       } finally {
+        hideLoader();
         swapBtn.disabled = false;
       }
     }
