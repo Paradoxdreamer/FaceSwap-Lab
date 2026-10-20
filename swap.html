@@ -6,137 +6,75 @@
   <title>Face Swap — PRX Lab</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
+    tailwind.config = { darkMode: 'class' }
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; }
 
-    .drop-zone {
-      transition: border-color 0.15s ease, background 0.15s ease;
-    }
+    .drop-zone { transition: border-color 0.15s ease, background 0.15s ease; }
     .drop-zone.dragover {
       border-color: #64748b;
       background: rgba(100, 116, 139, 0.06);
     }
 
-    /* Before/After */
     .ba-container {
-      position: relative;
-      overflow: hidden;
-      border-radius: 8px;
-      user-select: none;
-      background: #0f172a;
+      position: relative; overflow: hidden; border-radius: 8px;
+      user-select: none; background: #0f172a;
     }
     .ba-container img {
-      display: block;
-      width: 100%;
-      height: auto;
-      max-height: 65vh;
-      object-fit: contain;
+      display: block; width: 100%; height: auto; max-height: 65vh; object-fit: contain;
     }
     .ba-after {
-      position: absolute;
-      top: 0; left: 0;
-      height: 100%;
-      width: 50%;
-      overflow: hidden;
+      position: absolute; top: 0; left: 0; height: 100%; width: 50%; overflow: hidden;
     }
     .ba-after img {
-      position: absolute;
-      top: 0; left: 0;
-      height: 100%;
-      width: auto;
-      max-width: none;
-      min-width: 100%;
+      position: absolute; top: 0; left: 0; height: 100%; width: auto;
+      max-width: none; min-width: 100%;
     }
     .ba-handle {
-      position: absolute;
-      top: 0; bottom: 0;
-      width: 2px;
-      background: #e2e8f0;
-      left: 50%;
-      transform: translateX(-50%);
-      cursor: ew-resize;
-      z-index: 10;
+      position: absolute; top: 0; bottom: 0; width: 2px; background: #e2e8f0;
+      left: 50%; transform: translateX(-50%); cursor: ew-resize; z-index: 10;
     }
     .ba-handle::before {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 28px; height: 28px;
-      background: #f8fafc;
-      border: 2px solid #0f172a;
-      border-radius: 50%;
+      content: ''; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%); width: 28px; height: 28px;
+      background: #f8fafc; border: 2px solid #0f172a; border-radius: 50%;
     }
 
-    /* Loader */
     .loader-overlay {
-      position: fixed; inset: 0;
-      background: rgba(2, 6, 23, 0.92);
-      z-index: 50;
-      display: flex; flex-direction: column;
+      position: fixed; inset: 0; background: rgba(2, 6, 23, 0.92);
+      z-index: 50; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.2s ease;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
     }
     .loader-overlay.show { opacity: 1; pointer-events: all; }
-
     .spinner {
-      width: 36px; height: 36px;
-      border: 2.5px solid #1e293b;
-      border-top-color: #94a3b8;
-      border-radius: 50%;
+      width: 36px; height: 36px; border: 2.5px solid #1e293b;
+      border-top-color: #94a3b8; border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .progress-track {
-      width: 180px; height: 3px;
-      background: #1e293b;
-      border-radius: 99px;
-      overflow: hidden;
-      margin-top: 20px;
+      width: 180px; height: 3px; background: #1e293b;
+      border-radius: 99px; overflow: hidden; margin-top: 20px;
     }
     .progress-fill {
-      height: 100%;
-      background: #94a3b8;
-      width: 0%;
-      transition: width 0.25s ease;
+      height: 100%; background: #94a3b8; width: 0%; transition: width 0.25s ease;
     }
 
-    /* Theme overrides */
     html.light body { background: #f8fafc; color: #0f172a; }
-    html.light .border-default { border-color: #e2e8f0; }
-    html.light .bg-surface { background: #ffffff; }
-    html.light .text-secondary { color: #64748b; }
-    html.light .drop-zone { border-color: #cbd5e1; }
-    html.light .drop-zone.dragover { border-color: #64748b; background: #f1f5f9; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
 
-  <!-- Loader -->
   <div id="loader" class="loader-overlay">
     <div class="spinner"></div>
     <p class="mt-5 text-sm text-slate-400" id="loaderSub">Processing</p>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
     <p class="text-xs text-slate-500 mt-2" id="progressText">0%</p>
   </div>
 
-  <!-- Header -->
   <header class="border-b border-slate-800/80 sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md">
     <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-2.5">
@@ -144,7 +82,7 @@
         <span class="text-sm font-medium tracking-tight">Face Swap</span>
       </a>
       <div class="flex items-center gap-3">
-        <button id="themeBtn" class="text-slate-400 hover:text-slate-200 text-sm transition" title="Toggle theme">Theme</button>
+        <button id="themeBtn" class="text-slate-400 hover:text-slate-200 text-sm transition">Theme</button>
         <a href="index.html" class="text-sm text-slate-400 hover:text-slate-200 transition">Home</a>
       </div>
     </div>
@@ -152,13 +90,11 @@
 
   <main class="max-w-3xl mx-auto px-4 py-10">
 
-    <!-- Title -->
     <div class="mb-8">
       <h1 class="text-xl font-semibold tracking-tight">Face Swap</h1>
-      <p class="text-sm text-slate-400 mt-1">Upload a face and a target image. Results are processed client-side.</p>
+      <p class="text-sm text-slate-400 mt-1">Upload a face and a target image.</p>
     </div>
 
-    <!-- Controls -->
     <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6 text-sm">
       <div class="flex items-center gap-2">
         <span class="text-slate-500">Model</span>
@@ -169,21 +105,17 @@
           <option value="remaker">Remaker</option>
         </select>
       </div>
-
       <label class="flex items-center gap-2 cursor-pointer text-slate-300">
         <input type="checkbox" id="compressToggle" checked class="rounded border-slate-600" />
         <span>Compress</span>
       </label>
-
       <label class="flex items-center gap-2 cursor-pointer text-slate-300">
         <input type="checkbox" id="batchToggle" class="rounded border-slate-600" />
         <span>Batch</span>
       </label>
     </div>
 
-    <!-- Upload -->
     <div class="grid sm:grid-cols-2 gap-4 mb-6">
-      <!-- Source -->
       <div>
         <label class="block text-xs font-medium text-slate-400 mb-1.5">Source face</label>
         <div id="sourceZone" class="drop-zone border border-dashed border-slate-700 rounded-lg p-5 min-h-[160px] flex flex-col items-center justify-center cursor-pointer hover:border-slate-500">
@@ -199,8 +131,6 @@
         </div>
         <p id="faceTip" class="text-xs text-amber-600/90 mt-1.5 hidden">Clear, front-facing photos produce better results.</p>
       </div>
-
-      <!-- Target -->
       <div>
         <label class="block text-xs font-medium text-slate-400 mb-1.5">Target image<span id="batchLabel" class="hidden">s</span></label>
         <div id="targetZone" class="drop-zone border border-dashed border-slate-700 rounded-lg p-5 min-h-[160px] flex flex-col items-center justify-center cursor-pointer hover:border-slate-500">
@@ -217,7 +147,6 @@
       </div>
     </div>
 
-    <!-- Actions -->
     <div class="flex items-center gap-3 mb-8">
       <button id="swapBtn" disabled
         class="px-5 py-2 rounded-md bg-slate-100 text-slate-900 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition">
@@ -228,10 +157,8 @@
       </button>
     </div>
 
-    <!-- Status -->
     <div id="status" class="text-sm mb-6 hidden"></div>
 
-    <!-- Result -->
     <div id="resultArea" class="hidden mb-12">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm font-medium text-slate-300">Result</h2>
@@ -241,19 +168,14 @@
           <button id="retryBtn" class="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2 hidden">Retry with Pro</button>
         </div>
       </div>
-
       <div class="ba-container border border-slate-800" id="baContainer">
         <img id="baBefore" src="" alt="Before" />
-        <div class="ba-after" id="baAfterWrap">
-          <img id="baAfter" src="" alt="After" />
-        </div>
+        <div class="ba-after" id="baAfterWrap"><img id="baAfter" src="" alt="After" /></div>
         <div class="ba-handle" id="baHandle"></div>
       </div>
-
       <div id="batchResults" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 hidden"></div>
     </div>
 
-    <!-- History -->
     <div id="historySection" class="hidden">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm font-medium text-slate-300">Recent</h2>
@@ -264,7 +186,6 @@
 
   </main>
 
-  <!-- Footer -->
   <footer class="border-t border-slate-800/80 mt-auto">
     <div class="max-w-3xl mx-auto px-4 py-8">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
@@ -278,13 +199,7 @@
   </footer>
 
   <script>
-    const MODELS = {
-      pro:     { name: "Pro",     endpoint: "https://api.omegatech.app/api/tools/faceswap", type: "form" },
-      classic: { name: "Classic", endpoint: "https://api.omegatech.app/api/ai/Faceawap", type: "form" },
-      deep:    { name: "Deep",    endpoint: "https://api.omegatech.app/api/ai/Deepfake", type: "url" },
-      remaker: { name: "Remaker", endpoint: "https://api.omegatech.app/api/ai/remaker", type: "url" }
-    };
-
+    const $ = (id) => document.getElementById(id);
     let currentModel = "pro";
     let sourceFile = null;
     let targetFiles = [];
@@ -292,11 +207,6 @@
     let lastTargetUrl = null;
     let progressInterval = null;
 
-    const $ = (id) => document.getElementById(id);
-    const sourceInput = $("sourceInput");
-    const targetInput = $("targetInput");
-    const sourceZone = $("sourceZone");
-    const targetZone = $("targetZone");
     const swapBtn = $("swapBtn");
     const statusEl = $("status");
     const resultArea = $("resultArea");
@@ -318,24 +228,20 @@
     const html = document.documentElement;
     function setTheme(mode) {
       if (mode === "light") {
-        html.classList.remove("dark");
-        html.classList.add("light");
+        html.classList.remove("dark"); html.classList.add("light");
         localStorage.setItem("prx-theme", "light");
       } else {
-        html.classList.remove("light");
-        html.classList.add("dark");
+        html.classList.remove("light"); html.classList.add("dark");
         localStorage.setItem("prx-theme", "dark");
       }
     }
     setTheme(localStorage.getItem("prx-theme") || "dark");
     $("themeBtn").onclick = () => setTheme(html.classList.contains("dark") ? "light" : "dark");
 
-    // Model
     modelSelect.onchange = () => { currentModel = modelSelect.value; };
 
-    // Batch
     batchToggle.onchange = () => {
-      targetInput.multiple = batchToggle.checked;
+      $("targetInput").multiple = batchToggle.checked;
       batchLabel.classList.toggle("hidden", !batchToggle.checked);
       if (!batchToggle.checked && targetFiles.length > 1) {
         targetFiles = targetFiles.slice(0, 1);
@@ -343,7 +249,6 @@
       }
     };
 
-    // Compress
     async function compressImage(file, maxW = 1280, quality = 0.85) {
       if (!compressToggle.checked) return file;
       return new Promise((resolve) => {
@@ -365,14 +270,12 @@
       });
     }
 
-    // Drop zones
     function setupZone(zone, input, handler) {
       zone.onclick = () => input.click();
       zone.ondragover = (e) => { e.preventDefault(); zone.classList.add("dragover"); };
       zone.ondragleave = () => zone.classList.remove("dragover");
       zone.ondrop = (e) => {
-        e.preventDefault();
-        zone.classList.remove("dragover");
+        e.preventDefault(); zone.classList.remove("dragover");
         if (e.dataTransfer.files.length) handler([...e.dataTransfer.files]);
       };
       input.onchange = () => { if (input.files.length) handler([...input.files]); };
@@ -411,8 +314,8 @@
       $("targetPlaceholder").classList.add("hidden");
     }
 
-    setupZone(sourceZone, sourceInput, handleSource);
-    setupZone(targetZone, targetInput, handleTargets);
+    setupZone($("sourceZone"), $("sourceInput"), handleSource);
+    setupZone($("targetZone"), $("targetInput"), handleTargets);
 
     function checkReady() {
       swapBtn.disabled = !(sourceFile && targetFiles.length);
@@ -420,7 +323,6 @@
 
     $("clearBtn").onclick = resetAll;
 
-    // Loader
     function showLoader(msg) {
       loaderSub.textContent = msg || "Processing";
       progressFill.style.width = "0%";
@@ -441,17 +343,14 @@
       setTimeout(() => loader.classList.remove("show"), 250);
     }
 
-    // Before/After
     function initSlider(beforeUrl, afterUrl) {
       const container = $("baContainer");
       const before = $("baBefore");
       const after = $("baAfter");
       const wrap = $("baAfterWrap");
       const handle = $("baHandle");
-
       before.src = beforeUrl;
       after.src = afterUrl;
-
       let dragging = false;
       const update = (x) => {
         const rect = container.getBoundingClientRect();
@@ -460,7 +359,6 @@
         wrap.style.width = pct + "%";
         handle.style.left = pct + "%";
       };
-
       handle.onmousedown = (e) => { dragging = true; e.preventDefault(); };
       window.onmouseup = () => dragging = false;
       window.onmousemove = (e) => { if (dragging) update(e.clientX); };
@@ -468,12 +366,10 @@
       window.ontouchend = () => dragging = false;
       window.ontouchmove = (e) => { if (dragging) update(e.touches[0].clientX); };
       container.onclick = (e) => update(e.clientX);
-
       wrap.style.width = "50%";
       handle.style.left = "50%";
     }
 
-    // History
     function loadHistory() {
       const items = JSON.parse(localStorage.getItem("prx-history") || "[]");
       if (!items.length) { historySection.classList.add("hidden"); return; }
@@ -506,7 +402,6 @@
       loadHistory();
     };
 
-    // Share
     $("shareBtn").onclick = async () => {
       if (!lastResultBlob) return;
       try {
@@ -515,7 +410,7 @@
           await navigator.share({ files: [file], title: "Face Swap" });
         } else {
           await navigator.clipboard.write([new ClipboardItem({ "image/jpeg": lastResultBlob })]);
-          showStatus("Copied to clipboard", false);
+          showStatus("Copied to clipboard");
         }
       } catch {
         const a = document.createElement("a");
@@ -532,12 +427,46 @@
         : `<span class="text-slate-300">${msg}</span>`;
     }
 
-    // Core
+    // ===== CORE: call our Vercel proxy =====
+    async function callProxy(faceFile, targetFile, model) {
+      const fd = new FormData();
+      fd.append("face", faceFile);
+      fd.append("target", targetFile);
+      fd.append("model", model);
+
+      const res = await fetch("/api/faceswap", {
+        method: "POST",
+        body: fd,
+      });
+
+      if (!res.ok) {
+        let detail = "Request failed";
+        try {
+          const j = await res.json();
+          detail = j.error || j.message || detail;
+          if (j.details) {
+            const d = typeof j.details === "string" ? j.details : JSON.stringify(j.details).slice(0, 180);
+            detail += ` — ${d}`;
+          }
+        } catch {
+          try { detail = await res.text(); } catch {}
+        }
+        throw new Error(detail || `Error ${res.status}`);
+      }
+
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        // unexpected success JSON
+        const j = await res.json();
+        throw new Error(j.error || "Unexpected response");
+      }
+      return await res.blob();
+    }
+
     async function doSwap(forcePro = false) {
       if (!sourceFile || !targetFiles.length) return;
 
-      const key = forcePro ? "pro" : currentModel;
-      const model = MODELS[key];
+      const model = forcePro ? "pro" : currentModel;
 
       swapBtn.disabled = true;
       statusEl.classList.add("hidden");
@@ -545,16 +474,16 @@
       batchResults.classList.add("hidden");
       batchResults.innerHTML = "";
       retryBtn.classList.add("hidden");
-      showLoader(model.name);
+      showLoader(model.toUpperCase());
 
       try {
         const face = await compressImage(sourceFile);
         const results = [];
 
         for (let i = 0; i < targetFiles.length; i++) {
-          if (targetFiles.length > 1) loaderSub.textContent = `${model.name} · ${i + 1}/${targetFiles.length}`;
+          if (targetFiles.length > 1) loaderSub.textContent = `${model} · ${i + 1}/${targetFiles.length}`;
           const target = await compressImage(targetFiles[i]);
-          const blob = await callEngine(model, face, target);
+          const blob = await callProxy(face, target, model);
           results.push(blob);
 
           if (i === 0) {
@@ -596,72 +525,13 @@
       }
     }
 
-    async function callEngine(model, faceFile, targetFile) {
-      let res;
-
-      if (model.type === "form") {
-        const fd = new FormData();
-        if (model.name === "Pro") {
-          fd.append("source", faceFile);
-          fd.append("target", targetFile);
-        } else {
-          fd.append("action", "swap");
-          fd.append("faceFile", faceFile);
-          fd.append("sourceFile", targetFile);
-          fd.append("raw", "true");
-        }
-        res = await fetch(model.endpoint, { method: "POST", body: fd });
-      } else {
-        const fd = new FormData();
-        fd.append("source_image", faceFile);
-        fd.append("target_image", targetFile);
-        fd.append("face", faceFile);
-        fd.append("target", targetFile);
-        res = await fetch(model.endpoint, { method: "POST", body: fd });
-      }
-
-      if (!res.ok && model.name !== "Pro") {
-        loaderSub.textContent = "Retrying with Pro";
-        const fd = new FormData();
-        fd.append("source", faceFile);
-        fd.append("target", targetFile);
-        res = await fetch(MODELS.pro.endpoint, { method: "POST", body: fd });
-      }
-
-      if (!res.ok) {
-        let msg = `Error ${res.status}`;
-        try {
-          const t = await res.text();
-          if (t) msg += `: ${t.slice(0, 100)}`;
-        } catch {}
-        throw new Error(msg);
-      }
-
-      const ct = res.headers.get("content-type") || "";
-      if (ct.includes("application/json")) {
-        const json = await res.json();
-        const b64 = json.image || json.result || json.base64 || json.data?.image || json.output;
-        if (b64) {
-          const pure = String(b64).replace(/^data:image\/\w+;base64,/, "");
-          const bytes = Uint8Array.from(atob(pure), c => c.charCodeAt(0));
-          return new Blob([bytes], { type: "image/jpeg" });
-        }
-        if (json.url || json.image_url) {
-          const r = await fetch(json.url || json.image_url);
-          return await r.blob();
-        }
-        throw new Error("Unexpected response format");
-      }
-      return await res.blob();
-    }
-
     swapBtn.onclick = () => doSwap(false);
 
     function resetAll() {
       sourceFile = null;
       targetFiles = [];
-      sourceInput.value = "";
-      targetInput.value = "";
+      $("sourceInput").value = "";
+      $("targetInput").value = "";
       $("sourcePreview").classList.add("hidden");
       $("sourcePlaceholder").classList.remove("hidden");
       $("targetPreview").classList.add("hidden");
